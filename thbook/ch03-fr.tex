@@ -1,0 +1,712 @@
+\eject
+\vbox{\hsize=93.2mm\baselineskip=12pt
+\rightline{\eightit Nous marchons tous les deux et ne marchons pas dans les m\^emes rivi\`eres.}
+\pic{herakl.pdf}
+\vskip1pt
+\eightrm 
+\rightline{---Heraclitus of Ephesus, {\eightmit 6}$^{\grave{e}me}$/{\eightmit 5}$^{\grave{e}me}$ si\`ecle av. J.C.}
+}
+
+
+\chapter Traitement des donn\'ees.
+
+Outre les fichiers de donn\'ees contenant des donn\'ees du relev\'e, Therion utilise un fichier de configuration contenant des instructions sur la pr\'esentation des donn\'ees.
+
+\subchapter Fichier de configuration.
+
+Le nom de fichier de configuration peut \^etre donn\'e comme argument \`a Therion. 
+Par d\'efaut, Therion recherche le fichier nomm\'e |thconfig| dans le r\'epertoire de travail en cours. 
+Il se lit comme tout autre fichier Therion (c’est-\`a-dire une commande par ligne ; les lignes vides ou commen\c{c}ant par `|#|' sont ignor\'ees ; 
+les lignes termin\'ees par une barre oblique invers\'ee (backslash) se poursuivent \`a la ligne suivante). 
+Une liste des commandes actuellement prises en charge est donn\'ee ci-apr\`es :
+
+\subsubchapter `system'.
+
+Permet d'ex\'ecuter des commandes syst\`eme lors de la compilation de Therion.\[Par exemple pour ouvrir ou refresh un lecteur PDF externe.] 
+Normalement, Therion attend que le sous-processus soit termin\'e. 
+Si vous souhaitez continuer la compilation sans interruption, utilisez l’expression |<command> &| sous Linux et l’expression |<command>| sous Windows.
+
+\subsubchapter `encoding'.
+
+|encoding| fonctionne comme la commande d'encodage dans les fichiers de donn\'ees---il sp\'ecifie les jeux de caract\`eres. 
+
+\subsubchapter `language'.
+\syntax
+  \list
+    * |language <xx_[YY]>| 
+  \endlist
+\endsyntax
+
+\NEW{5.3}D\'efinit la langue de sortie pour les textes traduisibles.
+
+\subsubchapter `cs'.
+
+\syntax
+  \list
+    * |cs <systeme de coordonnees>| 
+  \endlist
+\endsyntax
+
+\NEW{5.3}En dehors du bloc |layout|, la commande sp\'ecifie le syst\`eme de coordonn\'ees de l'export.
+Il n'est pas possible de sp\'ecifier diff\'erents syst\`emes de coordonn\'ees pour diff\'erents exports 
+(La derni\`ere occurence de |cs| est utilis\'ee pour tous les exports).
+
+Si |cs| n'est pas d\'efinie dans le fichier de configuration, alors, la premi\`ere commande |cs| trouv\'ee par therion lors de la lecture des donn\'ees sera utilis\'ee pour les exports.
+
+A l'int\'erieur d'un |layout|, cette option sp\'ecifie le syst\`eme de coordonn\'ees pour la localisation des donn\'ees associ\'ees (|origin|, 
+|grid-origin|).
+
+\subsubchapter `sketch-warp'.
+
+\syntax
+  \list
+    * |sketch-warp <algorithm>| 
+  \endlist
+\endsyntax
+
+Sp\'ecifie quel algorithme de morphing utiliser pour d\'eformer les scraps.
+Plusieurs algorithmes sont possibles : |line|---par d\'efaut ; |plaquette|---invent\'e par Marco Corvi.
+
+\subsubchapter `input'.
+
+Fonctionne comme la commance |input| dans les fichiers de donn\'ees---Inclus d'autres fichiers
+
+\subsubchapter `source'.
+
+\description
+   Sp\'ecifie les fichiers sources (donn\'ees) que Therion doit lire. 
+   Vous pouvez sp\'ecifier plusieurs fichiers ici ; 
+   un par ligne. Vous pouvez \'egalement les sp\'ecifier \`a l'aide de l'option de ligne de commande |-s| (voir ci-dessous).
+
+   Il est \'egalement possible de taper (quelques petits extraits de code) directement dans le fichier de configuration en utilisant la syntaxe multiligne.
+   
+\enddescription
+
+\syntax
+  \hfill\break|source <nom_de_fichier>|\hfill\break
+  or\hfill\break
+  |source|\hfill\break
+  {\qquad\it\dots therion commands\dots}\hfill\break
+  |endsource|
+\endsyntax
+
+\arguments
+*  |<nom_de_fichier>| 
+\endarguments
+
+\subsubchapter `select'.
+
+\description
+  S\'electionne les objets (relev\'es et dessins) \`a exporter. 
+  Par d\'efaut, tous les objets du relev\'e sont s\'electionn\'es. 
+  Si aucune topographie n'est s\'electionn\'ee, toutes les notes provenant des topographies s\'electionn\'ees sont s\'electionn\'ees par d\'efaut pour l'exportation de la topographie.
+
+  S'il n'y a pas de scraps ou de topos dans les donn\'ees, la ligne de cheminement de toutes les topographies est export\'ee dans la topographie.\[ATTENTION : 
+  s'il y a \'enorm\'ement de donn\'ees, ce qui est le cas, avec des cavit\'es ou des syst\`emes \`a fort d\'eveloppement, la m\'emoire est rapidement satur\'ee
+  et le compilation crashe.]
+
+  Lorsque vous exportez des topographies dans diff\'erentes projections, vous devez les s\'electionner s\'epar\'ement pour chaque projection
+  
+\enddescription
+
+\syntax
+  |select <object> [OPTIONS]|
+\endsyntax
+
+\arguments
+*  |<object>| = tout relev\'e ou topographie identifi\'es par leur identifiant ID.
+\endarguments
+
+\options
+  * |recursive <on/off>| = valide uniquement lorsqu'une topographie est s\'electionn\'ee. Si cette option est activ\'ee (par d\'efaut), 
+                                       tous les sous-niveaux du relev\'e donn\'e sont s\'electionn\'es / d\'es\'electionn\'es de mani\`ere r\'ecursive.
+  
+  * |map-level <number>| = valide uniquement lorsqu'une topo est s\'electionn\'ee. 
+                                           D\'etermine le niveau auquel l'extension de la topographie pour l'exportation d'atlas est arr\^et\'ee. 
+                                           Par d\'efaut, 0 est utilis\'e. si `basic' est sp\'ecifi\'e, l’extension se fait jusqu’aux topographies de base. 
+                                           {\it Remarque :} les aper\c{c}us de ne sont affich\'es que comme sp\'ecifi\'e dans les topographies du |map-level| en cours.
+
+  * |chapter-level <number>| = valide uniquement si une topographie est s\'electionn\'ee. 
+                                                D\'etermine le niveau (level) auquel, lors de l'exportation de l'atlas, l'extension de chapi-tre sera stopp\'ee. 
+                                                Par d\'efaut, 0 est utilis\'e. Si vous sp\'ecifiez `|-|' ou `|.|', aucun chapitre n’est export\'e pour cette topographie. 
+                                                Si l'option de pages de titre (|title-pages|) de la mise en page (|layout| ) est activ\'ee, chaque chapitre commence par une page de titre.
+  
+  \endoptions
+
+
+
+\subsubchapter `unselect'.
+
+\description
+  D\'es\'electionne les objets \`a exporter.
+\enddescription
+
+\syntax
+  |unselect <object> [OPTIONS]|
+\endsyntax
+
+\arguments
+  Identique \`a la commande |select|.
+\endarguments
+
+\options
+  Identique \`a la commande |select|.
+\endoptions
+
+
+\subsubchapter `text'.
+
+\description
+  Sp\'ecifie la traduction de tout texte Therion par d\'efaut dans le fichier de sortie.
+\enddescription
+
+\syntax
+  |text <language ID> <texte therion> <mon texte>|
+\endsyntax
+
+\arguments
+*  |<language ID>| = identifiant de langue ISO standard (par exemple |fr|, |en| ou |en_GB|)
+*  |<therion text>| = texte Therion \`a traduire. Pour une liste des textes Therion et des traductions disponibles, voir le fichier |thlang/texts.txt|.
+\endarguments
+
+
+\subsubchapter `layout'.
+
+\description
+  Sp\'ecifie les caract\'eristiques de mise en page de l'export pour les topographies 2D. Les settings qui s'appliquent au mode atlas 
+  sont marqu\'es  `A' ; au mode map `M'.
+\enddescription
+
+\syntax
+|layout <id> [OPTIONS]
+    copy <source layout id>
+    cs <systeme de coordonnees>
+    north <true/grid>
+    scale <longueur sur l'image> <longueur reele>
+    base-scale <longueur sur l'image> <longueur reele>
+    units <metric/imperial>
+    rotate <nombre>
+    symbol-set <symbol-set>
+    symbol-assign <point/line/area/group/special> <symbol-type> \ 
+                                                  <symbol-set>
+    symbol-hide <point/line/area/group/special> <symbol-type>
+    symbol-show <point/line/area/group/special> <symbol-type>
+    symbol-colour <point/line/area/group/special> <symbol-type> <colour>
+    min-symbol-scale <scale>
+    fonts-setup <tinysize> <smallsize> <normalsize> <largesize> \
+                                                  <hugesize>
+    size <width> <height> <units>
+    overlap <valeur> <unites>
+    page-setup <dimensions> <uniets>
+    page-numbers <on/off>
+    exclude-pages <on/off> <liste_des_pages>
+    title-pages <on/off>
+    nav-factor <facteur>
+    nav-size <x-size> <y-size>
+    transparency <on/off>
+    opacity <valeur>
+    surface <top/bottom/off>
+    surface-opacity <valeur>
+    sketches <on/off>
+    layers <on/off>
+    grid <off/top/bottom>
+    grid-origin <x> <y> <x> <unites>
+    grid-size <x> <y> <z> <unites>
+    grid-coords <off/border/all>
+    origin <x> <y> <z> <unites>
+    origin-label <x-label> <y-label>
+    own-pages <nombre>
+    page-grid <on/off>
+    legend <on/off/all>
+    legend-columns <nombre>
+    legend-width <n> <unites>
+    map-comment <string>
+    map-header <x> <y> <off/n/s/e/w/ne/nw/se/sw/center>
+    map-header-bg <on/off>
+    map-image <x> <y> <n/s/e/w/ne/nw/se/sw/center> <nom_de_fichier>
+    statistics <explo/topo/carto/copyright all/off/nombre>
+               <explo/topo-length on/off>
+    scale-bar <longueur> <unites>
+    survey-level <N/all>
+    language <xx[_YY]>
+    colour/color <item> <couleur>
+    debug <on/all/first/second/scrap-names/station-names/off>
+    doc-author <string>
+    doc-keywords <string>
+    doc-subject <string>
+    doc-title <string>
+    code <metapost/tex-map/tex-atlas>
+    endcode
+endlayout|
+\endsyntax
+
+\arguments
+  |<id>| = identifiant du layout (utilis\'e par la commande |export|)
+\endarguments
+
+\comopt 
+  * |copy <source layout id>| = d\'efinissez ici les propri\'et\'es qui ne sont pas modifi\'ees en fonction de la pr\'esentation source donn\'ee |layout|.
+  
+  {\it Options li\'ee \`a la pr\'esentation des topographies (map) :}\Nobreak
+
+  * |scale <longueur de l'image> <longueur reele>| = d\'efini l'\'echelle de l'export de la topographie ou de l'atlas (M, A ; par d\'efaut : |1 200|)
+  * |base-scale <longueur de l'image> <longueur reele>| = si c'est indiqu\'e, Therion va visuellement mettre \`a l'\'echelle la topographie par un facteur |scale/base-scale|.
+                                                                                             Ceci poss\`ede le m\^eme effet que si la topographie imprim\'ee \`a l'\'echelle |base-scale| serait photo-r\'eduite \`a l'\'echalle |scale|. (M, A)
+  * |rotate <valeur>| = effectue une rotation de la topographie de |<valeur>|$\circ$ (M, A ; par d\'efaut : |0|)
+  * |units <metric/imperial>| = d\'efini les unit\'es de l'export (M, A ; par d\'efaut : |metric|)
+  * |symbol-set <symbol-set>| = utilise la banque de symboles |symbol-set| pour tous les symboles de la topographie, s'ils sont disponibles.
+                                                  Attention, le nom de la banque de symboles est casse sensitif. (M, A)
+    
+    Therion utilise les banques de symboles pr\'ed\'efinies suivantes :\par
+    UIS (International Union of Speleology)\par
+    ASF (Australian Speleological Federation)\par
+    AUT (Austrian Speleological Association)\par
+    CCNP (Carlsbad Caverns National Park)\NEW{5.4}\par
+    NZSS (New Zealand Symbol Set)\NEW{5.4}\par
+    SKBB (Speleoklub Bansk\'a Bystrica)
+    
+  * {\rightskip 0cm minus 4pt
+    |symbol-assign <point/line/area/group/special> <symbol-type> <symbol-set>| = 
+    affiche un symbole particulier dans la banque de symboles donn\'ee.
+    Pour ce symbole, cette option pr\'edomine sur la d\'efinition de la banque de symboles d\'efinie par la commande
+    |symbol-set|.\par}
+    
+    Si le symbole poss\`ede un sous-type, l'argument |<symbol-type>| doit \^etre sous une des formes suivantes :
+    |type:subtype| ou simplement |type|, 
+    qui assigne uns nouvelle banque de symboles \`a tous les sous-types du symbole en question.
+
+    Les symboles suivant ne doivent pas \^etre utilis\'es avec cette option :
+     point {\it section} (qui ne poss\`ede pas du tout de rendu sp\'ecifique) 
+     et tout point et ligne d'\'etiquette ({\it label} (\'etiquette), 
+    {\it remark} (remarque), {\it altitude}, {\it height} (hauteur), {\it passage-height} (hauteur du passage), 
+    {\it station-name} (nom de station), {\it date}). 
+    Voir le chapitre 
+    {\it Modifier le layout / Personnaliser les \'etiquettes de texte} pour plus de d\'etails sur comment modifier l'apparence des \'etiquettes. (M, A)
+
+    Group peut \^etre utilis\'e pour l'un de \'el\'ements suivants :
+    all (tout), centerline (ligne de cheminement), sections, \NEW{5.3}water (eau),
+    speleothems (sp\'el\'eoth\`emes), passage-fills (remplissage de passage/galerie), \NEW{5.4}ice (glace), sediments, equipment (\'equipement).
+    
+    Il existe deux symboles sp\'eciaux (special) : north-arrow (fl\`eche du nord), scale-bar (barre d'\'echelle).
+
+  * |symbol-hide <point/line/area/group/special> <symbol-type>| = Ne pas afficher un symbole particulier ou un groupe de symboles sp\'ecifique.
+    
+    Vous pouvez utiliser |group cave-centerline|, |group surface-centerline|, 
+    |point cave-station|, |point surface-station|
+    et \NEW{5.4}|group text| dans les commandes |symbol-hide| et |symbol-show|.
+    
+    Utilisez |flag:<entrance/continuation/sink/spring/doline/dig>| comme 
+    |<symbol-type>| pour masquer les stations topographiques avec un flag particulier
+    (par exemple |symbol-hide point flag:entrance|).
+    
+    Cela peut aussi \^etre combin\'e avec |symbol-show|.(M, A)
+  * |symbol-show <point/line/area/group/special> <symbol-type>| = affiche un symbole particulier ou un groupe de symboles s\'epcifique. 
+                                                                                                          Peut \^etre combin\'e avec |symbol-hide|. (M, A)
+
+  * \NEW{5.3}|symbol-colo[u]r <point/line/area/group/special> <symbol-type> <couleur>| = 
+    modifie la couleur d'un symbole particulier ou d'un groupe de symboles sp\'ecifique.\[Note : la modification de la couleur s'applique actuellement au remplissage
+    des pattern uniquement si (1) le format d'export est le PDF et (2)~si la version \MP\ est a minima 1.000] (M, A)
+
+  * \NEW{5.4.1}|min-symbol-scale <scale>| = 
+    d\'efini la |<scale>| minimale \`a partir de laquelle les points et les lignes sont affich\'ees sur la topographie. 
+    Par exemple, avec |min-symbol-scale M|, aucun point ni line dont l'\'echelle est |S| ou |XS| ne sera affich\'e sur la topographie.
+    |<scale>| poss\`ede le m\^eme format que l'option |scale| pour les points et les lignes.
+
+  * \NEW{5.4.1}|fonts-setup <tinysize> <smallsize> <normalsize> <largesize> <hugesize>| =
+    sp\'ecifie la taille du texte en points. 
+    |<normalsize>| s'applique au point label (\'etiquette), 
+    |<smallsize>| s'applique aux points remark (remarque) et autres points labels (\'etiquet-tes). 
+    Chacun d'eux peut s'appliquer aux lignes label (\'etiquette) en accord avec son option |-size|.
+    
+    Les valeurs par d\'efaut sont respectivement :
+    |8 10 12 16 24| pour les \'echelles jusqu'\`a 1:100; 
+    |7 8 10 14 20| pour les \'echelles jusqu'\`a 1:200; 
+    |6 7 8 10 14| pour les \'echelles jusqu'\`a 1:500 and 
+    |5 6 7 8 10| pour les \'echelles plus petites que 1:500.
+
+  {\it Options li\'ees au layout des pages :}\Nobreak
+
+  * |size <largeur> <hauteur> <unites>| = d\'efini la taille de la topographie dans le mode atlas.
+                                                          Si elle n'est pas sp\'ecifi\'ee, elle sera calcul\'ee \`a partir 
+                                                          de |page-setup| et |overlap|.
+                                                          Dans le mode topographie (map) cette option est appliqu\'ee si |page-grid| est d\'efini sur |on| (M, A ; par d\'efaut : |18 22.2 cm|)
+  * |overlap <valeur> <unites>| = d\'efini la taille de recouvrement entre deux pages en unit\'e de page dans le mode Atlas.
+                                                    D\'efini la taille de la marge dans le mode map (M, A ; par d\'efaut : |1 cm|)
+  * |page-setup <dimensions> <unites>| = d\'efini les dimensions de la page dans cet ordre :
+                                                                  largeur de la page (paper-width), hauteur de la page (paper-height), largeur de la page (page-width), hauteur de la page (page-height),
+                                                                  marge gauche (left-margin) et  marge haute (top-margin). 
+                                                                  Si ce n'est pas sp\'ecifi\'e, ce sera calcul\'e \`a partir de |size| et |overlap| (A ; par d\'efaut : |21 29.7 20 28.7 0.5 0.5 cm|)
+  * |page-numbers <on/off>| = affiche ou non la num\'erotation des pages (A ; par d\'efaut : |true|)
+  * |exclude-pages <on/off> <liste de pages>| = exclu des pages sp\'ecifiques de l'atlas.
+                                                                            La liste contient les num\'eros de pages s\'epar\'es par une virgule ou un tiret (pour les intervalles). 
+                                                                            Par exemple :~|2,4-7,9,23| signifie que les pages 2, 4, 5, 6, 7, 9 et 23 seront omises. Seules les pages de la topographie seront compt\'es 
+                                                                            (d\'efinir |own-pages 0| et |title-pages off| pour obtenir le num\'ero correct de la page \`a exclure).
+                                                                            La modification des options |own-pages| ou |title-pages| n'affecte pas l'exclusion des pages. (A)
+  * |title-pages <on/off>| = affiche ou non le titre des pages avant chaque chapitre de l'atlas (A ; par d\'efaut : |off|)
+  * |nav-factor <facteur>| = d\'efini le facteur de zoom du panneau navigation de l'atlas (A ; par d\'efaut : |30|)
+  * |nav-size <x-size> <y-size>| = d\'efini le nombre de pages de l'atlas dans les deux directions du panneau de navigation (A ; par d\'efaut : |2 2|)
+  * |transparency <on/off>| = d\'efini la transparence pour les galeries/passages (les galeries inf\'erieures sont alors visibles) (M, A ; par d\'efaut : |on|)
+  * |opacity <valeur>| = d\'efini l'opacit\'e en \% set opacity value (valide si |transparency| est sur |on|). L'intervalle de valeur est 0--100. (M, A ; par d\'efaut : |70|)
+  * |surface-opacity <valeur>| = d\'efini l'opacit\'e de la surface bitmap (valide si |transparency| est sur |on|).  L'intervalle de valeur est 0--100. (M, A ; par d\'efaut : |70|)
+  * |surface <top/bottom/off>| = d\'efini la position de la surface bitmap au dessus / en dessous de la topographie. (M, A ; par d\'efaut : |off|)
+  * |sketches <on/off>| = affiche ou non les dessins bitmaps scann\'es (morphing). (M, A ; par d\'efaut : |off|)
+  * |layers <on/off>| = active/d\'esactive les couches PDF~1.5. (M, A ; par d\'efaut : |on|)
+  * |grid <off/bottom/top>| = active/d\'esactive la grille (Les valeurs des coordonn\'ees peuvent \^etre optionnellement affich\'ees). (M, A ; par d\'efaut : |off|)
+  * |cs <syst. de coordonnees>| = syst\`eme de coordonn\'ees pour |origin| et |grid-origin|
+  * |north <true/grid>| = sp\'ecifie l'orientation par d\'efaut de la topographie (map).
+                                     Par d\'efaut, la grille astronomique du nord `vrai' est utilis\'e. 
+                                     Elle est ignor\'ee dans le cas d'utilisation du syst\`eme de coordonn\'ees locales.
+  * |grid-origin <x> <y> <x> <unites>| = d\'efini les coordonn\'ees d'origine de la grille (M, A)
+  * |grid-size <x> <y> <z> <unites>| = d\'efini la taille de la grille en unit\'es r\'eelles (M, A ; est \'egal par d\'efaut \`a la taille de la barre d'\'echelle |scale-bar|)
+  * |grid-coords <off/border/all>| = sp\'ecifie o\`u ajouter les \'etiquettes de coordonn\'ees \`a la grille (M, A; par d\'efaut : |off|)
+  * |origin <x> <y> <z> <unites>| = sp\'ecifie l'origine des pages de l'atlas (M, A)
+  * |origin-label <x-label> <y-label>| = sp\'ecifie l'\'etiquette pour la page d'atlas qui poss\`ede le coin en bas \`a gauche comme coordonn\'ees d'origine donn\'ees.
+                                                           Peut \^etre un nombre ou un charact\`ere. (M, A ; par d\'efaut : |0 0|)
+  * |own-pages <number>| = d\'efini le nombre de pages personnelles \`a ajouter avant la premi\`ere page g\'en\'er\'ee automatiquement en mode atlas
+                                             (utilis\'e actuellement pour corriger la num\'erotation des pages) (A ; par d\'efaut : |0|)
+  * |page-grid <on/off>| = affiche le plan des pages (M ; par d\'efaut : |off|)
+
+  {\it Options li\'ees \`a la l\'egende de la topographie (map) :}\Nobreak
+
+  * |map-header <x> <y> <off/n/s/e/w/ne/nw/se/sw/center>| = 
+    imprimme le cartou-che (header) de la topographie \`a une localisation sp\'ecifi\'ee par |<x> <y>|. 
+    Le cartouche de la topographie contient des informations basiques a propos de la cavit\'e :
+    nom (name), \'echelle (scale), fl\`eche du nord (north arrow), liste des topographes (list of surveyors) etc. 
+    Il est enti\`erement personnalisable (voir le chapitre {\it Modifier le layout} pour plus de d\'etails).
+    |<x>| est l'abcisse (gauche/droite ou E--W sur la page). 
+    |<y>| est l'ordonn\'ee (haut/bas ou N--S sur la page).
+    Les intervalles pour  |<x>| et |<y>| sont -100--200. 
+    Le coin inf\'erieur-gauche de la topographie est |0 0|, 
+    le coin sup\'erieur- droit est |100 100|. 
+    Le cartouche est align\'e avec le coin sp\'ecifi\'e comme point d'ancrage |<off/n/s/e/w/ne/nw/se/sw/center>| 
+    (M ; par d\'efaut : |0 100 nw|)
+  * |map-header-bg <on/off>| = lorsque l'option est sur |on|, l'arri\`ere-plan du cartouche est rempli avec la couleur d'arri\`ere plan 
+                                                 (par exemple pour cacher une grille topographi-que). (M ; par d\'efaut : |off|)
+  * |map-image <x> <y> <n/s/e/w/ne/nw/se/sw/center> <nom_de_fichier>| = 
+    inclus \- l'image\[Notez que vous pouvez inclure aussi une PDF, ce qui peut \^etre utilis\'e pour combiner plan et coupe d\'evelopp\'ee sur un m\^eme PDF avec un tr\`es bon rendu] 
+    sp\'ecifi\'ee par |<nom_de_fichier>| sur la topographie \`a la localisation donn\'ee par |<x> <y>|. 
+    Pour des d\'etails sur les coordonn\'ees et l'alignement, voir la description de l'option |map-header|.
+  * |legend-width <n> <unites>| = largeur de la l\'egende (M, A ; par d\'efaut : |14 cm|)
+  * |legend <on/off/all>| = affiche dans le cartouche la liste des symboles utilis\'es sur la topographie.
+                                        Si l'option est |all|, tous les symboles de la banque de symboles utilis\'ee seront affich\'es. (M, A ; par d\'efaut : |off|)
+  * |colo[u]r-legend <on/off>| = affiche ou non la couleur de fond des symboles dans la l\'egende lorsque l'option |map-fg| est donn\'ee pour l'altitude, le scrap o\`u la map (M, A)
+  * |legend-columns <number>| = ajuste le nombre de colonnes pour la l\'egende (M, A ; par d\'efaut : |2|)
+  * |map-comment <string>| = rajouter un commentaire optionnel au cartouche (M)
+  * |statistics <explo/topo/carto/copyright all/off/number>| ou 
+  * |statistics <explo/topo-length on/hide/off>| = affiche des statistiques basiques ; 
+                                                                           si la valeur est |off|, les membres sont class\'es par \NEW{5.4}ordre alphab\'etique ;
+                                                                           sinon, ils sont class\'es en fonction de leur contribution (= longueur) \`a l'exploration et/ou la topographie (M, A ; par d\'efaut : |off|)
+  * |scale-bar <length> <units>| = d\'efini la longueur de la barre d'\'echelle (M, A)
+  * |language <xx[_YY]>| = d\'efini la langue de l'export.
+                                          Les langues disponibles sont list\'ees sur la page de licence / copyright. Voir les {\it Annexes} si vous d\'esirez
+                                          ajouter ou personnaliser des traductions. (M, A)
+  * |colo[u]r <item> <colour>| = personnalise la couleur d'un objet (item) sp\'ecifique sur la topographie (map-fg (avant-plan), map-bg (arri\`ere-plan), preview-above (au-dessus), preview-below (en-dessous), label). 
+                                                 L'intervalle de couleur est 0--100 pour l'\'echelle de gris, et sous forme d'un triplet [0--100 0--100 0--100] pour l'\'echelle couleur RGB. 
+    
+    Pour |map-fg|, vous pouvez utilisez |altitude|, |scrap| ou |map| comme couleurs. 
+    In this case the map is coloured according to altitude, scraps or maps.
+    
+    Pour |map-bg|, vous pouvez utiliser le mot-clef |transparent| pour omettre compl\`etement l'arri\`ere-plan de la page. 
+    
+    Pour les \'etiquettes (labels), vous pouvez mettre la couleur sur |on/off|. Si c'est sur |on|, les \'etiquettes sont coloris\'ees en utilisant la couleur du scrap associ\'e.
+    
+  * |debug <on/all/first/second/scrap-names/station-names/off>| = 
+    dessine en uti-lisant diff\'erentes couleurs les scraps \`a diff\'erentes \'etapes de la transformation. 
+    Cela permet de visualiser comment Therion distort le dessin.
+    Voir la description de la commande |scrap| pour plus de d\'etails.
+    Les points dont la distance est la plus modifi\'ee pendant la transformation sont affich\'es en orange.
+    si |scrap-names| est sp\'ecifi\'e, alors le nom des scraps est affich\'e pour chaque scrap. 
+    |station-names| affiche le nom de chaque station topographique.
+  * |survey-level <N/all>| = |N| est le nombre de niveau de topographies \`a afficher pour le nom de la station topographique (M, A ; par d\'efaut : |0|).
+
+  {\it Option li\'ees \`a l'export PDF :}\Nobreak
+
+  * |doc-author <string>| = d\'efini l'auteur du document (M, A)
+  * |doc-keywords <string>| = d\'efini les mots-clefs du document (M, A)
+  * |doc-subject <string>| = d\'efini le sujet du document (M, A)
+  * |doc-title <string>| = d\'efini le titre du document (M, A)
+
+  {\it Personnalisation :}\Nobreak
+
+  * |code <metapost/tex-map/tex-atlas>| = Ajoute ou red\'efini ici des macros \TeX\ et \MP.
+                                                                   Cela permet \`a l'utilisateur de configurer de nombreux objets comme les symboles d\'efinis par l'utilisateur,
+                                                                   o\`u le layout de la map (topographie) et de l'atlas au m\^eme endroit \&c. 
+                                                                   Voir le chapitre {\it Modifier le layout} pour plus de d\'etails.
+  * |endcode| = doit terminer un bloc de commandes \TeX\ et/ou \MP\
+\endcomopt
+
+\midinsert
+%  \ifx\pdfoutput\undefined\else
+%    \pdfximage {pic/page.pdf}%
+%  \fi
+%  \vbox to 482bp{\centerline{\hbox to 400bp{%
+%    \ifx\pdfoutput\undefined
+%      \epsfbox{mp/page.1}%
+%    \else
+%      \rlap{\pdfrefximage\pdflastximage}%
+%      \convertMPtoPDF{mp/page.1}{1}{1}
+%    \fi
+%    \hss}}\vss
+%  }
+  \vbox to 482bp{\centerline{\hbox to 400bp{%
+      \rlap{\pic{page.pdf}}%
+      \MPpic{page.1}
+    \hss}}\vss
+  }
+\endinsert
+
+
+\subsubchapter `setup3d'.
+
+\syntax
+  \list
+    * |setup3d <valeur>| 
+  \endlist
+\endsyntax
+
+\NEW{5.3}Hack temporaire pour d\'efinir la distance d'\'echantillonnage (en m\`etres) 
+lorsque nous g\'en\'erons un mod\`ele 3D par morceaux lin\'eraire \`a partir d'une enveloppe construite \`a partir de courbe de B\'ezier.
+
+
+\subsubchapter `sketch-colors'.
+
+\syntax
+  \list
+    * |sketch-colors <nombre-de-couleurs>| 
+  \endlist
+\endsyntax
+
+\NEW{5.4} Cette option peut \^etre utilis\'ee pour r\'eduire la taille des images/dessins bitmaps pour les topographies (lorsque affich\'es)
+
+
+\subsubchapter `export'.
+
+\description
+  Exporte les topographies s\'electionn\'ees (surveys ou maps). 
+\enddescription
+
+\syntax
+  \list
+    * |export <type> [OPTIONS]| 
+  \endlist
+\endsyntax
+
+\arguments
+  * |<type>| = Les exports suivants sont support\'es :
+
+    |model| = mod\`ele 3D de la cavit\'e
+
+    |map| = topographie en 2D sur une page uniquement
+
+    |atlas| = atlas topographique en 2D sur plusieurs pages
+    
+    |cave-list| = tableau de synth\`ese des cavit\'es
+    
+    |survey-list| = tableau de synth\`ese des topographies (survey)
+    
+    |continuation-list| = liste des continuation possibles
+
+    |database| = base de donn\'ees SQL avec la ligne de cheminement (centreline)
+\endarguments
+
+\penalty0
+
+\options
+  {\it commun :}\Nobreak
+  * |encoding/enc <encoding>| = d\'efini l'encodage de l'export
+  * |output/o <file>| = d\'efini le nom du fichier export\'e (avec l'extension). Si aucun nom n'est sp\'ecifi\'e, le pr\'efixe ``|cave.|'' est utilis\'e avec l'extension correspondante au format d'export.
+    
+    Si le nom de fichier d'export est donn\'e et qu'aucun format d'export n'est sp\'ecifi\'e, 
+    le format d'export sera d\'etermin\'e par l'extension du nom de fichier.
+
+  {\it model  (mod\`ele):}\Nobreak
+
+  * |format/fmt <format>| = d\'efini le format d'export. Actuellement, les formats suivants sont accept\'es : |loch| (format natif ; fichier .loch ; par d\'efaut),
+    |compass| (fichier .plt), |survex| (fichier .3d), |dxf|,
+    |esri| (shapefiles 3D), |vrml|, |3dmf| et |kml| (Google Earth).
+  * |enable <walls/[cave/surface-]centerline/splay-shots/surface/all>| et
+  * |disable <walls/[cave/surface-]centerline/splay-shots/surface/all>| = 
+     \hfil\break
+     s\'electionne les caract\'eristiques \`a exporter, si le format le supporte. 
+     |surface| n'est actuellement exporter qu'au format |Therion|.
+  * |wall-source <maps/centerline/all>| = d\'efini la donn\'ee source \`a utiliser pour la mod\'elisation des parois 3D.
+
+  {\it map/atlas :}\Nobreak
+  
+  * |format/fmt <format>| = d\'efini le format de la map (topographie). Actuellement |pdf|, |svg|, 
+    |xhtml|\[SVG int\'egr\'e au fichier XHTML qui contient aussi la l\'egende],
+    |survex|, |dxf|, |esri|\[shapefiles ESRI. Les diff\'erents fichiers du shapefile sont \'ecrits dans un r\'epertoire nomm\'e par le nom\_de\_fichier sp\'ecifi\'e.],
+    |kml| (Google Earth), 
+    |xvi|\[image vecteur Xtherion. Les images XVI peuvent \^etre utilis\'ees dans
+    XTherion pour dessiner des topographies \`a l'\'echelle. |scale| (la r\'esolution d'image 100\,DPI est
+    suppos\'ee) et |grid-size| du layout sont utilis\'es pour l'export.] et
+    \NEW{5.3}|bbox|\[fichier texte contenant les coordonn\'ees g\'eographiques des coins inf\'erieur-gauche et sup\'erieur-droit de la topographie.]
+    pour map (topographie) ; |pdf| uniquement est support\'e pour l'atlas.
+  * |projection <id>| = identifiant unique qui sp\'ecifie le type de projection de la map (topographie).
+    (Voir la commande |scrap| pour les d\'etails.) 
+    
+    Si aucune map n'est d\'efinie, alors les scraps de la projection donn\'ee seront export\'es.
+    
+    S'il n'y a pas de scrap avec la projection sp\'ecifi\'ee, alors Therion exportera la ligne de cheminement (centerline) des topographies (surveys) s\'electionn\'ees
+  * |layout <id>| = d\'efini le layout pr\'ed\'efini pour la map ou l'altlas.
+  * |layout-xxx| = o\`u |xxx| permet de rajouter des options de layout afin de modifier certaines propri\'et\'es dans la commande export.
+  * |encoding/enc <encoding>| = defini l'encodage de l'export
+
+  {\it communes pour les listes (list) :}\Nobreak
+
+  * |format/fmt <format>| = d\'efini le format d'export pour continuation. Actuellement, les formats de sorties suivants sont disponibles :
+     |html| (par d\'efaut), |txt|,
+    \NEW{5.4}|kml|\[Pour cave-list et continuation-list.] et |dbf|.
+    
+  {\it continuation-list :}\Nobreak
+
+  * |attributes <(on)/off>| = d\'efini si les attributs d\'efinis par l'utilisateur dans le tableau de continuations sont export\'es ou non
+  * \NEW{5.3}|filter <(on)/off>| = d\'efini si les continuations sans commentaires/texte doivent \^etre filtr\'ees ou non.
+
+  {\it cave-list :}\Nobreak
+
+  * |location <on/(off)>| = d\'efini si les coordonn\'ees des entr\'ees doivent \^etre export\'ees ou non. 
+  * \NEW{5.3}|surveys (on)/off| = exporte une liste brute des cavit\'es lorsque l'option est sur |off|. 
+                                                    Sinon, toute la structure de la survey est agr\'eg\'ee avec les statistiques.
+    
+  {\it database :}\Nobreak
+  
+  * |format/fmt <format>| = actuellement |sql| et |csv|
+  * |encoding/enc <encoding>| = d\'efini l'encodage d'export
+\endoptions
+
+{\it Synth\`ese des formats de fichiers export\'es :}
+\nobreak\medskip
+\bgroup
+\leavevmode\kern1em\vbox{\advance\hsize-1em\halign{#\hfil\quad&#\hfil\cr
+{\it type d'export}&{\it formats disponibles}\cr\noalign{\smallskip\hrule\smallskip}
+model & loch, dxf, esri, compass, survex, vrml, 3dmf, kml\cr
+map  & pdf, svg, xhtml, dxf, esri, survex, xvi, kml, \NEW{5.3}bbox\cr
+atlas & pdf\cr
+database & sql, \NEW{5.4}csv\cr
+lists & html, txt, kml, dbf\cr}}\egroup
+
+
+\subchapter Faire fonctionner Therion.
+
+Maintenant, apr\`es avoir bien compris la structure des fichiers de donn\'ees et de configuration, nous sommes pr\^ets \`a utilsier Therion.
+Habituellement, ceci est effectu\'e via les commandes en ligne en se positionnant dans le dossier de donn\'ees en tapant :
+
+|therion|
+
+La syntaxe compl\`ete est :
+
+|therion [-q] [-L] [-l <log-file>]
+        [-s <fichier_source>] [-p <chemin_de_recherche>]
+        [-b/--bezier]
+        [-d] [-x] [--use-extern-libs] [<cfg-file>]|
+
+ou :
+
+|therion [-h/--help]
+        [-v/--version]
+        [--print-encodings]
+        [--print-environment]
+        [--print-init-file]
+        [--print-library-src]
+        [--print-symbols]
+        [--print-tex-encodings]
+        [--print-xtherion-src]|
+
+
+\penalty-200
+\arguments
+  |<cfg-file>| 
+  Therion ne prend qu'un seul argument optionnel : le nom du fichier de configuration.
+  Si aucun nom de fichier de configuration n'est fourni, le |thconfig| du r\'epertoire courant est utilis\'e.
+  S'il n'y a pas de fichier |thconfig| (par exemple, le dossier courant n'est pas le dossier de donn\'ees)
+  Therion sort et affiche un message d'erreur.
+\endarguments
+
+\options
+* |-d| =
+  force le mode d\'ebogage. 
+  L'impl\'ementation actuelle cr\'ee un dossier temporaire nomm\'e |thTMPDIR| 
+  (dans votre dossier temporaire syst\`eme)
+   et n'efface pas les fichiers temporaires. 
+
+%* |-g| =
+%  Using this option you can generate a new configuration file.
+%  If |cfg-file| is not specified therion will use the |thconfig|
+%  file. If the destination file exists, it'll be overwritten.
+%  Generate a new configuration file. This will be the given 
+%  |<cfg-file>| if specified, or |thconfig| in the current directory if not. 
+%  If the file already exists, it will be overwritten.
+%        
+* |-h, --help| =
+        Affiche une aide rapide.
+
+%* |-i| =
+%        Ignore comments when writing |-g| or |-u| configuration file.
+%
+* |-L| =
+        Ne cr\'ee par de fichier log. 
+        Normalement, Therion Normally therion \'ecrit tous les messages dans un fichier
+        therion.log dans le r\'epertoire courant.
+        
+* |-l <log-file>| =
+        Change le nom du fichier log.
+        
+* |-p <search-path>| =
+        Cette option est utilis\'ee pour d\'efinir le chemin de recherche (path)
+        (ou une liste de paths s\'epar\'es par des deux-points) que Therion utilise pour trouver les fichiers sources
+        (s'il ne les trouve pas dans le dossier de travail).
+
+* |-q| =
+        Lancer Therion en mode silencieux. Il affichera les warnings et les messages d'erreur dans STDERR.
+
+* |--print-encodings| =
+        Imprime une liste des encodages support\'es.
+        
+* |--print-tex-encodings| =
+        Imprime une liste des encodages support\'es pour l'export PDF.
+        
+* |--print-init-file| =
+        Imprime un fichier d'initialisation par d\'efaut. Pour plus de d\'etails, voir la section
+        {\it Initialisation} dans les {\it Annexes}.
+
+* |--print-environment| =
+        Imprime les caract\'eristiques de l'environnement Therion.
+
+* |--print-symbols| =
+        Imprime une liste de tous les symboles support\'es par Therion dans un fichier |symbols.xhtml|.
+        
+* |-s <source-file>| =
+        D\'efini le nom du fichier source.
+        
+%* |-u| =
+%        Upgrade the configuration file.
+%
+* |--use-extern-libs| =
+  	Ne copie pas les macros \TeX\ et \MP\ dans le dossier de travail \TeX\ et \MP\ 
+  	doivent chercher les macros comme bon leur semble. A utiliser avec pr\'ecaution.
+
+* |-v, --version| =
+  	Afficher les informations de version.        
+        
+* |-x| =
+  G\'en\'erer le fichier `.xtherion.dat' avec des informations additionnelles pour XTherion.
+\endoptions
+
+
+\subsubchapter XTherion---compiler.
+
+XTherion rend l'utilisation de Therion plus facile, sp\'ecialement sur les syst\`emes sans consoles de lignes de commandes.
+La fen\^etre de compilation est la fen\^etre par d\'efaut de XTherion.
+Pour lancer Therion, il suffit d'ouvrir un fichier de configuration et de presser la touche `F9' ou le bouton `Compile'. 
+
+XTherion affiche les messages de Therion dans la partie inf\'erieure de l'\'ecran.
+Chaque message d'erreur est surlign\'e et un lien hypertexte vers le fichier source o\`u l'erreur a eu lieu est cr\'e\'e.
+
+Apr\`es une premi\`ere compilation, des menus additionnels sont activ\'es, comme la {\it structure des Surveys} 
+({\it Survey structure}) et la {\it structure des Maps} ({\it Map structure}). 
+L'utilisateur peut s\'electionner confortablement des surveys ou des maps pour l'exportation en double-cliquant sur les objets dans l'arbre.
+Un clic simple dans l'arbre de la {\it Survey structure} affichera des informations basiques sur la
+survey dans le menu {\it Survey info}.
+
+\endinput

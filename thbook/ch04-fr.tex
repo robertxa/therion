@@ -1,0 +1,169 @@
+\eject
+\chapter Qu'obtenons-nous ?.
+
+\subchapter Fichiers d'informations.
+
+\subsubchapter Fichier Log.
+
+A c™t\'e des messages issus de Therion et des autres programmes associ\'es, le fichier Log (|therion.log|)
+contient des informations sur les valeurs calcul\'ees de la d\'eclinaison magn\'etique et de la convergence des m\'eridiens,
+des erreurs de bouclages et des distortions des scraps.
+
+Les erreurs absolues de bouclages sont $\sqrt{\Delta x^2+\Delta y^2+\Delta z^2}$, o\`u
+$\Delta x$ est la diff\'erence entre les points (identiques) de d\'epart et de fin de la boucle
+avant la distribution de l'erreur le long de l'axe $x$, et idem pour $y$ et $z$. 
+Le pourcentage d'erreur de bouclage est calcul\'e comme l'{\it erreur absolue / longueur totale de la boucle}. 
+L'erreur moyenne est la moyenne arithm\'etique simple de toutes les erreurs de bouclage.
+
+La distortion du scrap est calcul\'ee en utilisant une mesure de la distortion d\'efinie par
+toutes les paires de points (point symbols, points and control points of line symbols) dans le scrap
+La mesure est calcul\'ee comme $\left\vert d_a-d_b\right\vert\over d_b$, o\`u $d_b$ est
+la distance aux points avant la distorsion, et $d_a$ la distance aux points apr\`es la distortion. 
+Les distortions du scrap maximale et moyenne sont calcul\'ee respectivement comme 
+le maximum ou la moyenne de ces mesures appliqu\'ees \`a toutes les paires de points.
+
+
+\subsubchapter XTherion.
+
+Therion donne des statistiques basiques a propos de chaque topographie (survey) si l'option |-x| est donn\'ee :
+longueur, intervalles vertical, N--S, et E--W, nombre de vis\'ees et nombre de stations 
+Dans XTherion, cette information est fournie dans la fen\^etre de {\it Compilation} et dans 
+le menu {\it Info de la topo} ({\it Survey info}) lorsque certaines topographies (surveys) du menu 
+ {\it Structure de la topographie} ({\it Survey structure}) sont s\'electionn\'ees.
+
+
+\subsubchapter Export SQL.
+
+L'export SQL permet d'obtenir facilement toutes les informations de la ligne de cheminement (centerline)
+de fa\c{c}on d\'etaill\'ee et subtile.
+C'est un fichier texte commen\c{c}ant avec des d\'eclarations de tableau 
+(o\`u `?' est dans le listing ci-dessous pour une valeur maximale requise par la donn\'ee de la colonne en question) :
+
+|create table SURVEY (ID integer, PARENT_ID integer, 
+  NAME varchar(?), FULL_NAME varchar(?), TITLE varchar(?));
+create table CENTRELINE (ID integer, SURVEY_ID integer, 
+  TITLE varchar(?), TOPO_DATE date, EXPLO_DATE date, 
+  LENGTH real, SURFACE_LENGTH real, DUPLICATE_LENGTH real);
+create table PERSON (ID integer, NAME varchar(?), SURNAME varchar(?));
+create table EXPLO (PERSON_ID integer, CENTRELINE_ID integer);
+create table TOPO (PERSON_ID integer, CENTRELINE_ID integer);
+create table STATION (ID integer, NAME varchar(?), 
+  SURVEY_ID integer, X real, Y real, Z real);
+create table STATION_FLAG (STATION_ID integer, FLAG char(3));
+create table SHOT (ID integer, FROM_ID integer, TO_ID integer, 
+  CENTRELINE_ID integer, LENGTH real, BEARING real, GRADIENT real, 
+  ADJ_LENGTH real, ADJ_BEARING real, ADJ_GRADIENT real, 
+  ERR_LENGTH real, ERR_BEARING real, ERR_GRADIENT real);
+create table SHOT_FLAG (SHOT_ID integer, FLAG char(3));|
+
+Ceci est suivi par une grande quantit\'e de commandes d'insertion SQL. 
+Ce fichier SQL peut \^etre charg\'e (`load') par n'importe quel base de donn\'ees SQL
+(apr\`es initialisation base-d\'epentante, qui peuvent inclure de lancer un serveur SQL et de s'y connecter, cr\'eer une base de donn\'ees et de s'y connecter.
+Une bonne m\'ethode est de d\'ebuter une transaction avant de charger ce fichier SQL si la base de donn\'ee n'initialise pas une transaction automatiquement).
+Il est important de bien faire correspondre l'encodage de la base de donn\'ee \`a l'encodage utilis\'e dans la commande Therion |export database|.
+
+
+\midinsert
+    \centerline{\pic{database.pdf}}%
+\endinsert
+
+Les noms de tableau et colonnes s'expliquent par eux-m\^eme ; 
+pour les valeurs ind\'efinies ou non-existantes, la valeur |NULL| est utillis\'ee ; 
+|FLAG| dans le tableau |SHOT_FLAG| est |dpl| ou |srf| pour les vis\'ees dupliqu\'ees ou de surface ;
+dans le tableau |STATION_FLAG|, |ent|, |con|, |fix|, 
+|spr|, |sin|, |dol|, |dig|, |air|, |ove|, |arc| sont pour les stations
+avec les attributs entrance (entr\'ee), continuation, fixed (fixe), spring (source, arriv\'ee d'eau), sink (perte), doline, dig (d\'esobstruction), air-draught (courant d'air), 
+overhang (surplomb) or arch (arche), respectivement.
+
+Voici quelques exemples simple d'interrogation de la base de donn\'ees SQL de Therion:
+
+\penalty-100{\it Liste des membres des \'equipes de topographie avec information de la longueur topographi\'ee par chacun d'entre-eux :}
+
+|select sum(LENGTH), sum(SURFACE_LENGTH), NAME, SURNAME 
+  from CENTRELINE, TOPO, PERSON 
+  where CENTRELINE.ID = TOPO.CENTRELINE_ID and PERSON.ID = PERSON_ID 
+  group by NAME, SURNAME order by 1 desc, 4 asc;|
+
+{\it Quelle parties de la cavit\'e a \'et\'e topographi\'ee durant l'ann\'ee 1998 ?}
+
+|select TITLE from SURVEY where ID in 
+  (select SURVEY_ID from CENTRELINE 
+  where TOPO_DATE between '1998-01-01' and '1998-12-31');|
+
+{\it Quelle longueur de galerie y-a-t-il entre les altitudes 1500 et 1550 m a.s.l. ?}
+
+|select sum(LENGTH) from SHOT, STATION S1, STATION S2 
+  where (S1.Z+S2.Z)/2 between 1500 and 1550 and 
+  SHOT.FROM_ID = S1.ID and SHOT.TO_ID = S2.ID;|
+
+\subsubchapter Listes---caves (cavit\'es), surveys (topographies), continuations (points d'interrogations).
+
+Utiliser l'|export continuation-list| nous permet d'obtenir un \'etat des lieu de tous les points de la ligne de cheminement (centerline)
+et des scraps qui poss\`edent l'information d'une continuation possible\[en utilisant l'attribut |station| pour un point de la centreline
+et |point continuation| dans les scraps].
+
+|export cave-list| produit sous la forme d'un tableau l'information sur les diff\'erentes cavit\'es topographi\'ees (surveys)
+(pour cela, vous devez sp\'ecifier le flag |entrance| dans vos donn\'ees), ce qui inclut la longueur, la profondeur et la localisation des entr\'ees.
+
+L'information d\'etaill\'ee de chaque sous-topographie (sub-survey) est donn\'ee par la commande |export survey-list|.
+La longueur inclut les vis\'ees avec le flag |approximate|, mais pas celles avec les flags |explored| (explor\'e), 
+|duplicate| (dupliqu\'e) ou |surface|.
+
+\vfill\eject
+
+% Pour forcer le saut de page :
+\subchapter Topographies en 2D (maps).
+
+\subsubchapter Topographies \`a imprimer.
+
+Les topographies sont produites aux formats PDF et SVG, qui peuvent \^etre visualis\'es ou imprim\'es via un bon nombre de logiciels.
+Pensez bien \`a d\'ecocher la case {\it Fit page to paper} (adapt\'e \`a la taille du papier) ou option similaire si vous voulez imprimer \`a l'\'echelle exacte que vous avez d\'efinie.
+
+Dans le mode Atlas, des informations suppl\'ementaires sont ajout\'ees \`a chaque page :
+num\'ero de page, nom de la topographie et \'etiquette de page.
+
+Les num\'eros des pages voisines en N, S, E et W, tout comme les niveaux sup\'erieurs et inf\'erieurs
+sont extr\^emement utiles. Il ya aussi des liens `hypertextes' sur les c™t\'es de la topographie si la cavit\'e continue
+\`a la page suivante o\`u \`a la page appropri\'ee correspondante \`a la suite de la cavit\'e dans cette direction.
+
+Les fichiers PDF sont tr\`es optimis\'es---les scraps sont stock\'es dans des formes de types XObject
+uniquement une fois, et r\'ef\'erenc\'es sur les pages appropri\'ees.
+Therion utilise les options les plus avanc\'ees des fichiers PDF comme la gestion de la transparence et des calques.
+
+Cr\'eer des fichiers PDF peut \^etre optionnellement effectu\'e en post-processing par des applications comme
+pdf\TeX\ ou Adobe Acrobat---Il est possible d'extraire ou modifier certaines pages, d'ajouter des commentaires ou du cryptage, etc.
+
+\NEW{5.3}Si la topographie a \'et\'e produite en utilisant des donn\'ees g\'eor\'ef\'erenc\'ee, alors elle contient les informations de g\'eor\'ef\'erencement.
+Ceci peut \^etre extrait par XTherion pour produire des images raster g\'eor\'ef\'erenc\'ees (voir {\it XTherion/Additional tools} 
+pour plus de details).
+
+
+\subsubchapter Topographies pour SIG (Syst\`emes d'Informations G\'eographiques).
+
+Les topographies peuvent \^etre export\'ees aux formats DXF, ESRI (shapefiles 2D et 3D) ou KML
+afin d'\^etre utilis\'ees dans les logiciels appropri\'es.
+Ces topographies ne contiennent pas le graphisme des symboles.
+
+
+\subsubchapter Topographies pour applications sp\'ecifiques.
+
+Les topographies au format XVI contiennent les informations de la ligne de cheminement (centerline) avec les LRUD
+(et optionellement les dessins scann\'es et transform\'es)
+Ce format peut \^etre import\'e dans XTherion pour servir de background (arri\`ere-plan) \`a la digitalisation de la topographie.
+
+Les topographie dans le format Survex sont pr\'evues pour obtenir une visualisation rapide dans le logiciel Aven.
+
+
+\subchapter Mod\`eles 3D.
+
+Therion put exporter des mod\`eles 3D dans diff\'erents formats autre que le format natif |.lox|.
+Ils peuvent \^etre charg\'es dans des programmes appropri\'es pour la visualisation, l'\'edition ou trac\'e 
+pour \^etre imprim\'es ou modifi\'es/analys\'es plus en profondeur.
+Si le format ne supporte pas la forme des galeries arbitraire, seule la ligne de cheminement (centerline) est incluse.
+
+\subsubchapter Loch.
+
+Loch est un visualisateur de mod\`eles 3D (fichiers |.lox|) inclus dans la distribution Therion. 
+Il supporte par exemple le rendu de haute r\'esolution d'un fichier et la visualisation 3D avec des lunettes 3D.
+
+\endinput

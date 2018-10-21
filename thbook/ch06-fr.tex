@@ -1,0 +1,574 @@
+\eject
+\vbox{\hsize=93.2mm\baselineskip=12pt\leftskip3.5mm\parskip0pt
+\eightit
+\leavevmode\llap{1. }Lorsque un scientifique distingu\'e mais \^ag\'e d\'eclare que quelque chose est possible, il est certainement dans le vrai. S'il annonce que quelque chose est impossible, il est tr\`es probblement dans le faux.
+
+\leavevmode\llap{2. }Le seul moyen de d\'ecouvrir les limites du possible est de s'aventurer d'un pas vers l'impossible.
+
+\leavevmode\llap{3. }Aucune technologie suffisamment avanc\'ee ne peut \^etre attribu\'ee \`a la magie.
+\vskip 6pt
+\rightline{\eightrm ---Arthur C. Clarke, {\eightmit 1973}}
+}
+
+\chapter Annexes.
+
+\subchapter Compilation.
+
+Si vous voulez compiler Therion \`a partir du code source et l'utiliser, vous devez 
+(les trois premiers points sont requis uniquement pour la compilation) :
+\list
+* Compiler GNU C/C++
+* GNU make
+* Perl
+* Python 2.7 or 3
+* Tcl/Tk 8.4.3 ou plus r\'ecent (\www{https://www.tcl.tk}) avec l'ensemble de widgets
+  {\it BWidget}  %\hfil\break
+  (\www{https://sourceforge.net/projects/tcllib/})
+  et optionnellement l'extension {\it tkImg} \hfil\break
+  (\www{https://sourceforge.net/projects/tkimg/}).
+%  {\it Tom} OpenGL extension (improved version is included in Therion source 
+%  distribution)
+%  and 
+* Distribution \TeX\ avec au minimum \TeX\ avec le format Plain, 
+  un pdf\TeX r\'ecent, et \MP\ (\www{https://www.tug.org}).
+* Le package LCDF Typetools (\www{https://www.lcdf.org/type/})
+* La distribution ImageMagick avec les outils {\it convert} et {\it identify}, 
+  si vous voulez pouvoir utiliser les facilit\'es de distortion et de morphing des dessins bitmap.
+* {\it ghostscript} si vous voulez cr\'eer des images calibr\'ees \`a partir de topographies PDF g\'eor\'ef\'erenc\'ees.
+\endlist
+
+Pour compiler Loch, vous avez besoin de :
+
+\list
+* freetype 2 ou plus r\'ecent ; freetype-config doit fonctionner
+* wxWidgets 2.6 ou plus r\'ecent ; wx-config doit fonctionner
+* VTK 5.0 ou plus r\'ecent
+* libjpeg, libpng, zlib
+\endlist
+
+Tous les programmes (\`a l'exception des packages BWidget et tkImg) sont habituellement inclus avec 
+les distributions Linux, Unix ou MacOS\,X.
+Pour Windows, il faut consid\'erer utiliser MinGW et MSYS (\www{http://www.mingw.org}).
+C'est une distribution d'outils GNU avec GNU make et GCC.
+(By The Way, pourquoi ne pas utiliser la version pr\'e-compil\'ee pour Windows ?)
+
+\subsubchapter D\'emarrage rapide.
+
+\list
+* D\'ecompresser la distribution source |therion-5.*.tar.gz|
+* |cd therion|
+* |make config-macosx| ou |make config-win32|, si vous \^etes sous MacOS~X ou Windows, respectivement
+* |make|
+* |sudo make install|
+\endlist
+
+%Installing Tom:
+%
+%\list
+%* if you use Windows, download a Tcl/Tk source distribution, |make| and
+%  |make install| it under MSYS
+%* |cd therion/thtom/linux| or |cd therion/thtom/win|
+%* |make|
+%* copy |Tom0.2| directory (which should contain |pkgIndex.tcl| and one of 
+%  |libtom.so| or |libtom.dll|) 
+%  to the |lib| subdirectory of your 
+%  Tcl/Tk distribution.
+%\endlist
+
+\subsubchapter Le guide du Hacker.
+
+{\it Param\`etres de Make (Makefile)}
+
+Le {\it Makefile} de Therion peut prendre diff\'erents param\`etres optionnels.
+
+\list
+* |config-linux|, |config-macosx|, |config-win32| = configuration Therion pour une pla-teforme (OS) sp\'ecifique. Linux est la configuration par d\'efaut.
+* |config-release|, |config-oxygen|, |config-ozone| = d\'efini le niveau d'optimization pour le compiler C++ (none, |-O2| and |-O3|)  
+* |config-debug| = utile avant de d\'ebogguer le program  
+* |install| = installer Therion
+* |clean| = effaced les fichiers temporaires
+\endlist
+
+{\it Cross-compilation pour Windows}\NEW{5.4}
+
+Therion supporte la compilation d'ex\'ecutables Win32 sur Linux gr\^ace au cross
+compiler MXE (\www{http://mxe.cc}). 
+
+\list
+* installer les packages static/win32 suivant (i686-w64-mingw32.static-\char42) dans le r\'eper-toire |/usr/lib/mxe/| : binutils, bzip2, expat, freetype-bootstrap,
+gcc, gettext, glib, harfbuzz, jpeg, libiconv, libpng, tiff, vtk, wxwidgets,
+xz, zlib.
+* modifier le PATH: {\catcode`\=12|export PATH=/usr/lib/mxe/usr/bin:$PATH|}
+* |cd therion|
+* |make config-win32cross|
+* |make|
+\endlist
+
+{\it Ajouter de nouvelles traductions}
+
+Therion supporte la traduction des \'etiquettes de topographies. 
+Supposons que vous voulez rajouter un nouveau langage |xx|. 
+
+\list
+* lancer `|perl process.pl export xx|' dans le sous-r\'epertoire Therion `thlang'. 
+  Cela cr\'ee un fichier |texts_xx.txt|. Ce fichier est encod\'e en UTF-8.
+* \'editer le texte du ficher |texts_xx.txt|. Rajouter votre traduction aux lignes commen\c{c}ant par `|xx:|'.
+* lancer |make update|
+* (re)compiler Therion
+\endlist
+
+
+{\it Ajouter de nouveau encodages/encodings}
+
+Bien que l'encodage Unicode UTF-8 couvre tous les caract\`eres que Therion est capable de processer,
+il peut \^etre probl\'ematique de l'utiliser.
+Dans ce cas, il est possible de rajouter le support de n'importe quel encodage 8-bit pour les fichiers textes d'entr\'ee.
+Copier un fichier de traduction dans le r\'epertoire |thchencdata| ; 
+Ajouter son nom au hash `ifiles' hash au d\'ebut du script Perl script |generate.pl| ; 
+le lancer et recompiler Therion.
+
+Le fichier de traduction doit contenir deux valeurs hexadecimal d'un caract\`ere
+(le premier dans l'encodage 8-bit, le second en unicode) sur chaque ligne. 
+Il est possible de faire suivre un commentaire avec le caract\`ere `|#|'. 
+
+{\it Ajouter de nouveaux encodages \TeX}
+
+Il est facile de rajouter de nouveaux encodages pour les exports des topographies en 2D.%
+\[\NEW{5.3}Cette section d'applique aux styles anciens de polices en utilisant la commande |tex-fonts|
+dans le fichier d'initialisation et est obsol\`ete si nous utilisons la commande |pdf-fonts| .]
+Copier l'encodage appropri\'e du fichier d'encodage avec une extension |*.enc| dans le dossier |texenc/encodings|,
+lancer le script Perl |mktexenc.pl| situ\'e dans le r\'epertoire |texenc| et (re)compiler Therion.
+
+Therion utilise les m\^emes fichier d'encodage que le programme |afm2tfm| de la distribution \TeX, 
+qui poss\`ede le m\^eme format qu'un vecteur d'encodage dans une police PostScript. 
+Vous trouverez de plus amples d\'etails dans le chapitre {\it 6.3.1.5 Format d'encodage des fichiers} 
+dans la documentation du programme Dvips.
+
+
+{\it G\'en\'erer de nouveau cartouches (headers) \TeX\ et \MP\ }
+
+Therion utilise \TeX\ et \MP\ pour la composition et la visualisation des topographies 2D. 
+Des macros pr\'ed\'efinies sont compil\'ees avec l'ex\'ecutable Therion et sont copi\'ees dans le r\'epertoire de travail
+juste avant d'ex\'ecuter \MP\ et \TeX\ (sauf si l'option |--use-extern-libs| est utilis\'ee). 
+La commande de Layout rend possible de modifier certaines macros dans le fichier de configuration lors de la compilation. 
+
+Pourtant, il est possible d'effectuer des modifications permanentes aux fichiers macros. 
+Apr\`es avoir modifi\'e les fichiers dans les r\'epertoires |mpost| et |tex|, il est n\'ecessaire d'ex\'ecu-ter les scripts
+Perl |genmpost.pl| et |gentex.pl|, qui g\'en\`erent des fichiers header C++ header,
+et de compiler l'exc\'ecutable Therion de nouveau .
+
+\subchapter Variables d'environment.
+
+Therion lit les variables d'environnement suivantes :
+
+\list
+* |THERION| = [non requis] recherche du path (chemin) pour le(s) fichier(s) (x)therion.ini
+* |HOME| (|HOMEDRIVE| + |HOMEPATH| on WinXP) = 
+  [non requis, mais g\'en\'eralement pr\'esent sur votre syst\`eme] chemin/path de recherche pour le(s) fichier(s) (x)therion.ini
+* |TEMP|, |TMP| = r\'epertoire temporaire du syst\`eme, o\`u Therion stocke les fichiers temporaires (dans un r\'epertoire nomm\'e |th$PID$|, o\`u |$PID$| est l'ID du processus),
+                              sauf si l'option |tmp-path| est sp\'ecifi\'e dans le fichier d'initialisation.
+\endlist
+
+Consulter la documentation de votre OS pour savoir comme le d\'efinir.
+
+\subchapter Fichiers d'nitialisation.
+
+Les caract\'eristiques Therion et XTherion d\'ependantes du syst\`eme sont sp\'ecifi\'ees dans les fichiers therion.ini ou xtherion.ini, respectivement.
+Ils sont cherch\'es dans les r\'epertoires suivant :
+
+\list
+* sur UNIX: 
+  |.|, |$THERION|, |$HOME/.therion|, |/etc|, |/usr/etc|, |/usr/local/etc|
+* sur Windows:
+  |.|, |$THERION|, |$HOME\.therion|, |<Therion-installation-directory>|, 
+  |C:\WINDOWS|, |C:\WINNT|, |C:\Program Files\Therion|
+\endlist
+ 
+\subsubchapter Therion.
+
+Si aucun fichier n'est trouv\'e, Therion utilise la configuration par d\'efaut. 
+Si vous voulez une liste de cette configuration par d\'efaut, 
+utilisez l'option |--print-init-file|. 
+Le fichier d'initialisation est lu comme n'importe quel autre fichier Therion.
+(Les lignes vides ou commen\c{c}ant pas un `|#|' sont ignor\'ees ; 
+les lignes finissant avec backslash `|\|' continuent sur la ligne suivante on next line.) 
+Actuellement, les commandes d'initialisation sont :
+
+\list
+* |loop-closure <therion/survex>|
+
+  Par d\'efaut, survex est utilis\'e si le programme est pr\'esent dans le syst\`eme, sinon, therion est utilis\'e.
+
+* |encoding-default <encoding-name>|
+
+  D\'efini l'encodage pas d\'efaut (actuellement non utilis\'e).
+
+* |encoding-sql <encoding-name>|
+
+  D\'efini l'encodage par d\'efaut des export SQL.
+        
+* |language <xx[_YY]>|  
+
+  Langage d'export par d\'efaut. Voir la page de licence / copyright pour obtenir la liste des langages disponibles.
+
+* |units <metric/imperial>| 
+
+  D\'efini les unit\'es par d\'efaut.
+
+* |mpost-path <file-path>|
+
+  D\'efini le path (chemin) complet vers l'ex\'ecutable \MP\ si Therion est incapable de le trouver
+  (``|mpost|'' est la valeur par d\'efaut).
+
+* |mpost-options <string>|
+
+  D\'efini les options \MP.
+
+* |pdftex-path <file-path>|
+
+  D\'efini le path (chemin) complet vers l'ex\'ecutable pdf\TeX\ si Therion est incapable de le trouver
+  (``|pdfetex|'' est la valeur par d\'efaut).
+
+* |identify-path <file-path>|
+
+  D\'efini le path (chemin) complet vers l'ex\'ecutable identify d'ImageMagick si Therion est incapable de le trouver
+  (``|identify|'' est la valeur par d\'efaut).
+  
+* |convert-path <file-path>|
+
+  D\'efini le path (chemin) complet vers l'ex\'ecutable convert d'ImageMagick si Therion est incapable de le trouver
+  (``|convert|'' est la valeur par d\'efaut).
+
+* |source-path <directory>| 
+
+  Path (chemin) vers les donn\'ees et les fichiers de configuration. Utilis\'e principalement pour des d\'efinitions de layout et de niveau \`a l'\'echelle du syst\`eme.
+
+* |tmp-path <directory>| 
+
+  Path (chemin) o\`u le r\'epertoire temporaire doit \^etre cr\'e\'e.
+  
+* |tmp-remove <OS command>| 
+
+  Commande syst\`eme pour effacer les fichiers des r\'epertoires temporaires.
+
+* |tex-env <on/off>| 
+
+  [Ne fonctionne que pour Windows.]
+  Lorsque l'option est sur |off| (valeur par d\'efaut), Therion efface temporairement toutes les variables d'environnement reli\'ees \`a 
+  \TeX. Utile si d'autre distributions \TeX sont install\'ee sur votre syst\`eme et qui ont d\'ej\`a d\'efinit des variables d'environnement,
+  ce qui peut rendre confus les programmes \TeX\ et \MP\ fournis par Therion dans la distribution Windows. 
+  
+  Si l'option est sur |on|, vous utiliserez une autre distribution \TeX\ pour l'export des topographies.
+
+* |text <language ID> <therion text> <my text>|
+
+  Utiliser cette option permet de modifier toute traduction de texte par d\'efaut dans Therion pour l'export.
+  Pour la liste des textes Therion et des traductions disponibles, voir le fichier |thlang/texts.txt|.
+
+* |cs-def <id> <proj4def>|\NEW{5.4}  %[other options]
+
+  D\'efini un nouvel |<id>| de syst\`eme de coordonn\'ees en utilisant la syntaxe Proj4.
+
+* |pdf-fonts <rm> <it> <bf> <ss> <si>|\NEW{5.3}
+
+  D\'efini les polices \`a utiliser pour les topographies export\'ees en PDF. 
+  La commande doit \^etre suivit par les paths (chemins) sp\'ecifiant o\`u les polices 
+  regular (normal), italic (italique), bold (gras), sans-serif et sans-serif oblique sont stock\'ees sur le syst\`eme.
+  
+  Les polices TrueType et OpenType sont support\'ees. 
+  
+  Therion n\'ecessite l'installation de LCDF Typetools sur le syst\`eme pour pouvoir utiliser cette commande. Exemple :
+  
+  |pdf-fonts  "/usr/share/fonts/Serif.ttf" \
+           "/usr/share/fonts/Serif-Italic.ttf" \
+           "/usr/share/fonts/Serif-Bold.ttf" \
+           "/usr/share/fonts/Sans.ttf" \
+           "/usr/share/fonts/Sans-Oblique.ttf"|
+
+* |otf2pfb <on/off>|\NEW{5.3}
+
+  Si l'option est sur |on| (default), les polices OpenType utilis\'ees dans |pdf-fonts| sont converties en polices
+  PFB, si elles sont bas\'ees sur PostScript. 
+  De l'information est perdue dans le format PFB, mais l'avantage est que pdf\TeX\ peut encapsuler le sous-ensemble des polices PFB 
+  (au contraire des polices OpenType qui doivent \^etre encapsul\'ees en totalit\'e).
+
+* |tex-fonts <encoding> <rm> <it> <bf> <ss> <si>|
+        
+  Mani\`ere originale et plus complexe de d\'efinir les polices pour les exports pdf des topographies. 
+  Vous avez besoin de sp\'ecifier explicitement l'encodage
+  (maximum 256 caract\`eres de la polices seront utilis\'es). 
+  La liste des encodages support\'es est donn\'ee pas l'option de la commande en ligne |--print-tex-encodings|.   
+  Le m\^eme encodage doit \^etre utilis\'e pour g\'en\'erer la m\'etrique \TeX\ (fichiers |*.tfm|) 
+  pour ces polices (par exemple avec le programme afm2tfm) et cet encodage doit \^etre donn\'e explicitement dans le fichier map de pdf\TeX. 
+  La seule exception est syst\`eme de base des polices des ordinateurs r\'ecents (Computer Modern) qui utilisent un encodage `raw'. 
+  Cet encodage n'a pas besoin d'\^etre sp\'ecifi\'e dans le fichier map de pdf\TeX.
+  
+  L'encodage doit \^etre suivi par cinq sp\'ecifications de styles de polices : regular (normal), italic (italique), bold (gras), sans-serif et sans-serif oblique.
+  Les param\`etres par d\'efaut sont |tex-fonts raw cmr10 cmti10 cmbx10 cmss10 cmssi10|
+  
+  Un exemple sur comment utiliser d'autre polices (par exemple TrueType Palatino dans encodage xl2 (d\'eriv\'e de ISO8859-2)), lancer :
+  
+  |ttf2afm -e xl2.enc -o palatino.afm palatino.ttf|
+  
+  |afm2tfm palatino.afm -u -v vpalatino -T xl2.enc|
+
+  |vptovf vpalatino.vpl vpalatino.vf vpalatino.tfm|
+  
+  Vous produirez les fichiers |vpalatino.vf|, |vpalatino.tfm| et |palatino.tfm|. Ajouter la ligne :
+  
+  |palatino <xl2.enc <palatino.ttf|
+  
+  au fichier map de pdf\TeX. La m\^eme chose doit \^etre effectu\'e pour les styles italic (italique), bold (gras)
+  et les styles correspondant sans-serif et sans-serif-oblique. Si vous \^etes paresseux voir feignant, essayez :
+  
+  |tex-fonts xl2 palatino palatino palatino palatino palatino|
+  
+  (Nous ne devrions utiliser que la police virtuelle |vpalatino| au lieu de |palatino|,
+   qui contient ni cr\'enage, ni ligatures, mais pdf\TeX\ ne supporte pas la commande |\pdfincludechars| pour les polices virtuelles.
+   Cela doit \^etre am\'eliorer.)
+    
+  Si vous voulez ajouter des encodages non support\'es, lisez le chapitre {\it Compilation / Hacker's guide}. 
+
+* |tex-fonts-optional <encoding> <rm> <it> <bf> <ss> <si>|
+
+  Similaire \`a |tex-fonts|, mais teste si les polices \TeX\ sont install\'ees sur le syst\`eme. Cela ne fait rien si aucune police n'est pr\'esente.
+  
+  Cette configuration est utilis\'ee par d\'efaut pour les polices Czech/Slovak et cyrillic pour \'eviter les erreurs \MP\ 
+  sur les syst\`emes qui n'ont pas ces polices pr\'esentes.
+  
+  Comme les tests demandent du temps (ex\'ecuter pdf\TeX), 
+  vous pouvez d\'esactiver compl\`etement ce comportement par d\'efaut en renseignant l'option |tex-fonts| dans le fichier INI.
+
+\endlist
+
+
+\subsubchapter XTherion.
+
+Le fichier d'initialisation de XTherion est actuellement un script Tcl evalut\'e lorsque XTherion d\'emarre
+Ce fichier est comment\'e ; Voir les commentaires pour conna\^itre les d\'etails.
+
+
+%\subsubchapter Speed optimization.
+%
+%[Optionally creating \MP\ and \TeX\ format files.]
+
+\subchapter Limitations.
+
+\list
+*  scrap size = $\approx 2.8 \times 2.8$ m dans l'\'echelle d'export (limitation \MP)
+*  page size = 
+
+   PDF map ou atlas: $\approx 5 \times 5$ m (limitation pdf\TeX)
+   
+   SVG map: pas de limites 
+*  scraps count (nombre de scraps) = approx. 500--6000, d\'ependemment de la fr\'equence des sections
+   
+   limite actuelle \MP\ : $4 (scraps + sections) < 4096$ (cela pourrait \^etre augment\'e arbitrairement)
+
+   limite pdf\TeX\ : $2\times pages + images + patterns +
+                            6 (scraps + sections) < 32500$
+\endlist
+
+
+\subchapter Exemples de donn\'ees.
+
+L'exemple suivant illustre l'utilisation basique des commandes Therion :
+
+|encoding  utf-8
+
+survey main -title "Grotte de test"
+  
+  survey first
+    centreline
+      units compass grad
+      data normal from to compass clino length
+                  1    2  100     -5    10
+    endcentreline
+  endsurvey
+
+  survey second -declination [3 deg]
+    centreline
+      calibrate length 0 0.96
+      data normal from to compass length clino
+                  1    2  0       10     +10
+    endcentreline
+  endsurvey
+ 
+  centreline
+    equate 2@first 1@second
+  endcentreline
+ 
+  # les scraps sont generalement dans des fichiers *.th2 separes
+  scrap s1 -author 2004 "Therion team"
+
+    point 763 746 station -name 2@second
+    point 702 430 station -name 2@first
+    point 352 469 station -name 1@first
+    point 675 585 air-draught -orientation 240 -scale large
+
+    line wall -close on
+      287 475
+      281 354 687 331 755 367
+      981 486 846 879 683 739
+      476 561 293 611 287 475
+    endline
+
+  endscrap
+
+  map m1 -title "Test map"
+    s1
+  endmap
+ 
+endsurvey|
+
+Le fichier de configuration associ\'e pourrait \^etre :
+
+|encoding  utf-8
+source test
+
+layout l1
+  scale 1 100
+  layers off
+endlayout
+
+select m1@main
+
+export model -fmt survex
+export map -layout l1|
+
+Si vous enregistrez le fichier de donn\'ees comme `test.th' et le fichier comme `thconfig' vous devriez \^etre capable de le compiler avec Therion.
+
+
+%\subchapter Map symbols library.
+
+%\input sym/symlib
+
+\subchapter Historique.
+
+\list
+\everypar{\hangindent16pt\hangafter1}
+* {\bf 1999}
+
+  Oct : premi\`eres id\'ees concr\`etes
+
+  Nov : d\'ebut de la programmation (scripts Perl et macros \MP)
+
+  27 Dec:  Therion compile une topographie simple au format PostScript pour la premi\`ere fois
+       (code source de 32 kB de Perl et de 7 kB de \MP\ et \TeX).
+       Le mod\`ele topographique d\'eform\'e est substantiellement diff\'erent de l'actuel 
+       (les positions des objets sont relatives \`a une vis\'ee particuli\`ere, et non \`a la position de toutes les stations du scrap).
+       Cette version contient d\'ej\`a des options int\'eressantes comme les fonctions de transformation qui permettre \`a l'utilisateur
+       de sp\'ecifier le format d'entr\'ee des donn\'ees topographiques, ou de diviser les grandes topographies en diff\'erentes maps ou
+       multiples feuilles.
+				
+  30 Dec : Premi\`ere page internet (avec des donn\'ees d'exemple, mais sans le code source)
+  
+* {\bf 2000}\nobreak\par\nobreak
+  Jan : xthedit (Tcl/Tk), une interface graphique \`a Therion
+
+  18 Feb : d\'ebut de la reprogrammation (Perl)
+
+  1 Apr : le premier PDF avec des liens hypertextes d'une topographie et d'un atlas
+
+  Aug : exp\'erimentations avec PDF, pdf\TeX\ et \MP
+
+* {\bf 2001}
+
+  Nov : d\'ebut de la r\'eimpl\'ementation \`a partir de z\'ero : 
+       Therion (C++ avec quelques scripts Perl h\'erit\'es des versions pr\'ec\'edentes) ; 
+       notion de scrap ;
+       \'editeur interactif de topographie en 2D, ThEdit en remplacement de xthedit (Delphi) 
+
+  Dec : ThEdit exporte une topographie simple pour la premi\`ere fois
+
+* {\bf 2002}
+
+  Mar : Therion 0.1 ---
+       Therion est capable de processer les donn\'ees topographiques de la grotte des Chauves Souris Mortes (Cave of Dead Bats).
+       XTherion, l'\'editeur de texte d\'edi\'e \`a Therion (Tcl/Tk).
+
+  27 Jul : Therion 0.2 ---
+       Therion compile une topographie simple (consistent en deux scraps)
+       pour la premi\`ere fois (code source de 800 kB)
+
+  Aug : XTherion est \'etendu \`a l'\'edition de topographie 2D (en remplacement \`a ThEdit)
+
+  Sep : Therion compile les premi\`eres donn\'ees r\'eelles d'une cavit\'e complexe. XTherion devient une extension du compiler.
+
+%  Oct 5: Public presentation of Therion, held on Trango\v{s}ka
+
+* {\bf 2003}\nobreak
+
+  Mar : premi\`ere version finalis\'ee du Therion Book
+
+  Apr : Therion inclus dans la distribution GNU/Linux Debian
+
+  Jun : tous les scripts Perl sont r\'e\'ecrits en C++, Therion est un seul ex\'ecutable maintenant
+         (m\^eme s'il utilise Survex et \TeX)
+       
+%  Nov 10: first idea of the Labyrinth project
+
+* {\bf 2004}\Nobreak
+
+  Mar : Therion 0.3 --- Therion exporte un mod\`ele 3D \`a partir de topographies 2D.
+  L'algorithme de bouclage est inclus dans Therion.
+
+* {\bf 2006}\Nobreak
+
+  Oct : Therion 0.4 --- Nouveau viewer 3D (Loch).
+
+* {\bf 2007}\Nobreak
+
+  Feb : Therion 0.5 --- Support des images/dessins bitmap pour le morphing.
+\endlist
+
+
+\subchapter Futur.
+
+Bien que Therion soit utilis\'e pour la production de topographie, il y a encore de nombreuses fonctions \`a impl\'ementer :
+
+\subsubchapter G\'en\'eral.
+
+\list
+* information sur les bouclages dans la base de donn\'ees SQL
+\endlist
+
+\subsubchapter Topographies 2D.
+
+\list
+* compl\'eter les banques de symboles pr\'ed\'efinis
+* g\'en\'erer un registre pour l'atlas
+* utiliser MPlib \`a la place de \MP
+\endlist
+
+
+\subsubchapter Mod\`eles 3D.
+
+\list
+* am\'eliorer la mod\'elisation des parois des galeries/passages
+\endlist
+
+\subsubchapter XTherion.
+
+\list
+* am\'eliorer les capacit\'es d'\'edition 2D
+\endlist
+
+\subsubchapter Loch.
+
+\list
+* sch\'emas de couleurs
+* arbre des survey pour s\'electionner les sous-surveys \`a afficher
+* filtre spatial (par exemple, d\'ecouper par plan)
+* support de surfaces multiples
+\endlist
+
+\subsubchapter Labyrinth.
+
+\list
+* nouveau GUI pour le futur (voir \www{https://labyrinth.speleo.sk})
+\endlist
+
+
+
+\endinput

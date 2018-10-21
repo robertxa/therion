@@ -151,6 +151,7 @@ outdirs:
 	mkdir -p $(OUTDIR)/loch
 	mkdir -p $(OUTDIR)/xtherion
 	mkdir -p $(OUTDIR)/thbook
+	mkdir -p $(OUTDIR)/thbook/fr
 
 version:
 	python set_version.py
@@ -209,9 +210,13 @@ xtherion/xtherion: version xtherion/*.tcl
 loch/loch: version loch/*.h loch/*.cxx loch/*.c
 	$(MAKE) -C ./loch
 
-doc: $(OUTDIR)/thbook/thbook.pdf
+doc:
+	$(OUTDIR)/thbook/thbook.pdf
+	$(OUTDIR)/thbook/thbook-fr.pdf
 
-thbook: version $(OUTDIR)/thbook/thbook.pdf
+thbook: 
+	version $(OUTDIR)/thbook/thbook.pdf
+	version $(OUTDIR)/thbook/thbook-fr.pdf
 
 samples: $(OUTDIR)/samples.doc/index.tex
 
@@ -219,9 +224,14 @@ $(OUTDIR)/samples.doc/index.tex:
 	$(MAKE) -C samples
 	touch thbook/version.tex
 	$(MAKE) -C thbook
+	touch thbook/fr/version.tex
+	$(MAKE) -C thbook-fr
 
 $(OUTDIR)/thbook/thbook.pdf: thbook/*.tex
 	$(MAKE) -C thbook
+
+$(OUTDIR)/thbook/fr/thbook-fr.pdf: thbook/*.tex
+	$(MAKE) -C thbook-fr
 
 clean:
 	perl makefile.pl rm -q thlibrarydata.cxx ./xtherion/therion.tcl

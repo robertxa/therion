@@ -1,0 +1,105 @@
+\vbox to 0pt{\kern-1in\kern-10pt\hbox to 0pt{\kern-1in
+  \pic{thbook.jpg}\hss}\vss}
+
+{\footline={}
+\hbox{}
+\vskip0pt
+\font\tit=cmssdc10 at 36pt
+\font\subtit=cmssdc10 at 24pt
+\rightline{\tit La Bible Therion\hskip0pt}
+\vskip365pt
+\rightline{\subtit Stacho Mudr\'ak\hskip0pt}
+\vskip20pt
+\rightline{\subtit Martin Budaj\hskip0pt}
+\vskip160pt
+\font\subtit=cmssdc10 at 18pt
+%\rightline{\subtit \it{Traduction :} Dominique Ros, Xavier Robert - 2018\hskip0pt}
+\rightline{\subtit Traduction (2018) : Dominique Ros\hskip0pt}
+\vskip10pt
+\rightline{\subtit Xavier Robert\hskip0pt}
+\vfill
+\eject
+
+Therion est un logiciel prot\'eg\'e par le droit d'auteur, distribu\'e sous la licence publique g\'en\'erale GNU.
+
+Copyright \copyright\ 1999--2018 Stacho Mudr\'ak, Martin Budaj
+
+Ce livre d\'ecrit Therion \input version \unskip.
+%Generated on \the\year--\twodigits{\the\month}--\twodigits{\the\day} .
+
+\vskip1.2cm
+
+Contributions au code de {\it Olly Betts}, {\it Marco Corvi}, {\it Vladimir Georgiev}, {\it Georg Pacher} et {\it Dimitrios Zachariadis}.
+\bigskip
+\leftline{Nous remercions :}
+%\leftline{{\it Martin Sluka\/}} % for his support concerning not only Therion,}
+%\leftline{{\it Martin Heller\/}} % for criticism on first implementation of scrap distortion,}
+%\leftline{{\it Olly Betts\/}} % for idea of importing processed centreline instead of raw survey data,}
+%\leftline{{\it Wookey\/}} % for improving the documentation.} 
+\leftline{{\it Martin Sluka}, {\it Ladislav Bla\v zek}, {\it Martin Heller}, {\it Wookey}, {\it Olly Betts}}
+\leftline{et tous les utilisateurs pour leurs retours/commentaires, leur soutien et leurs suggestions.}
+\vskip1.2cm
+\leftline{Traductions (\%):}
+\medskip
+\leavevmode\kern1em\vbox{\font\rm=cmr10\rm\font\it=cmti10\rm\halign{#\hfil\quad&\hfil#\hfil\quad&\hfil#\hfil\quad&\hfil#\hfil\quad&#\hfil\cr
+{\it Langue}&{\it XTherion}&{\it Map header}&{\it Loch}&{\it Traduit par}\cr\noalign{\smallskip\hrule\smallskip}
+bg                 & 86 & 87 & 100 & Alexander Yanev, Ivo Tachev, Vladimir Georgiev\cr
+ca                 & -- & 100 & -- & Evaristo Quiroga\cr
+cz                 & 81 & 88 & -- & Ladislav Bla\v zek\cr
+de                 & 82 & 92 & -- & Roger Schuster, Georg Pacher, Benedikt Hallinger\cr
+el                 & 85 & 87 & -- & Stelios Zacharias\cr
+en[\_GB$\mid$\_US] & 75 & 93 &100 & Stacho Mudr\'ak, Olly Betts\cr
+es                 & 75 & 83 & -- & Roman Mu\~noz, Evaristo Quiroga\cr
+fr                 & ? & 87 & ? & Eric Madelaine, Gilbert Fernandes, Xavier Robert\cr
+it                 & 86 & 92 & -- & Marco Corvi\cr
+mi                 & -- & 91 & -- & Kyle Davis, Bruce Mutton\cr
+pl                 & -- & 90 & -- & Krzysztof Dudzi\'nski\cr
+pt[\_BR$\mid$\_PT] & -- & 83 & -- & Toni Cavalheiro, Rodrigo Severo\cr
+ru                 & 81 & 86 & -- & Vasily V. Suhachev, Andrey Kozhenkov\cr
+sk                 & 85 & 93 & 96 & Stacho Mudr\'ak\cr
+sq                 & 85 & 87 & -- & Fatos Katallozi\cr
+zh                 & 86 & 91 & -- & Zhang Yuan Hai, Duncan Collis\cr
+}}
+
+
+\vfill
+L'illustration de couverture montre un croquis de la salle de {\it Hrozn\'y kame\v nolom} 
+dans la ``Grotte des chauves-souris mortes'' (Cave of Dead Bats) en Slovaquie 
+et la topographie de celle-ci produite par Therion.
+\eject
+
+\def\write#1#2{}
+
+%\vbox to0pt{\line{\hss\pdfximage width 93.2mm {pic/agrippa.jpg}\pdfrefximage\pdflastximage\hskip-2mm}\vss}\kern-2pt
+%{\let\eject=\relax \eightit\baselineskip16.3pt\leftskip7cm\parindent4.05cm
+%Only for you, children of doctrine and learning, have we written this work. 
+%Examine this book, ponder the meaning we have dispersed in various places 
+%and gathered again; 
+%what we have concealed in one place we have disclosed in another, 
+%that it may be understood by your wisdom.
+%
+%\leftskip0cm
+%\rightline{\eightrm ---Henricus C. Agrippa ab Nettesheym, \eightmit 1533}
+%\vskip.5cm
+\chapter Table des mati\`eres.
+%}
+\bgroup
+\font\bf=cmbx10
+\font\rm=cmr10\rm
+\baselineskip=12.5pt
+\def\Line#1{\line{\hskip2cm#1\hskip2cm}}
+
+\openin0=etc/contents-fr.tex
+\ifeof0 \message{Warning: re-run to input a newly generated TOC file}%
+\else \closein0 \input etc/contents-fr \fi
+
+\egroup
+\vfil\eject
+\ifodd\pageno\else\hbox{}\eject\fi
+}
+
+\immediate\openout1=etc/contents
+
+
+
+\endinput

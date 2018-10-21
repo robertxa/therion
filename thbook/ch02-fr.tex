@@ -1,0 +1,1708 @@
+\eject
+\vbox{\rightline{\pic[100mm]{agrippa.jpg}}
+\kern-20mm
+\eightit\baselineskip10pt\rightskip105mm\leftskip0mm\parindent1.05cm
+Nous n'avons \'ecrit ce travail que pour vous, enfants de doctrine et d'ap-prentissage. 
+Examinez ce livre, r\'efl\'echis-sez au sens que nous avons dispers\'e et rassembl\'e \`a nouveau ; 
+ce que nous avons cach\'e \`a un endroit, nous l'avons r\'ev\'el\'e \`a un autre, 
+afin que cela puisse \^etre compris par votre sagesse.\par
+\kern-10pt
+\rightline{\hfil\eightrm ---Henricus C. agrippa ab Nettesheym, \eightmit 1533}
+}
+
+\chapter Cr\'eation de fichiers de donn\'ees.
+
+\subchapter Les Bases.
+
+Les fichiers d'entr\'ee pour Therion sont au format texte. 
+Il y a quelques r\`egles de base sur la forme d'un tel fichier :
+
+\list 
+* Il existe deux types de commandes : 
+  Commandes sur une ligne et commandes sur plusieurs lignes.  
+
+* Une commande sur une seule ligne est termin\'ee par un caract\`ere de fin de ligne. 
+   La syntaxe de celle-ci est :
+
+  |command arg1 ... argN [-option1 value1 -option2 value2 ...]|
+
+  o\`u {\it arg1 ... argN} sont des arguments obligatoires et les paires commen\c{c}ant par un tiret 
+  {\it -option value} sont des options facultatives. 
+  Les arguments et les options disponibles d\'ependent de la commande. 
+  Un exemple pourrait \^etre :
+
+  |point 643.5 505.0 gradient -orientation 144.7|
+
+   avec trois arguments obligatoires (au d\'ebut) et une paire optionnelle `option / valeur' (apr\`es le tiret). 
+   Les options peuvent n'avoir aucune ou plusieurs valeurs. 
+  
+* Les commandes multi-lignes commencent de la m\^eme mani\`ere que les commandes \`a une seule ligne, 
+   mais continuent sur les lignes suivantes jusqu'\`a la fin de la commande explicite (endcommande). 
+   Ces lignes peuvent contenir des donn\'ees ou des options, qui sont appliqu\'ees aux donn\'ees suivantes. 
+   Si une ligne de donn\'ees commence par un mot r\'eserv\'e \`a une option, vous devez ins\'erer `|!|' Devant celle-ci. La syntaxe est :
+
+  |command arg1 ... argN [-option1 value1 -option2 value2 ...]
+  ...
+  optionX valueX
+  data
+  ...
+endcommand|
+
+Encore une fois, pour une meilleure compr\'ehension, voici un exemple r\'eel avec la commande ``|line|'' (ligne) :
+
+|line wall -id walltobereferenced
+  1174.0 744.5
+  1194.0 756.5 1192.5 757.5 1176.0 791.0
+  smooth off
+  1205.5 788.0 1195.5 832.5 1173.5 879.0
+endline|
+
+   Cette commande line a un argument obligatoire, un type de ligne (paroi de cavit\'e  dans ce cas), suivi d'une option. 
+   Les deux lignes suivantes contiennent des donn\'ees (coordonn\'ees des courbes de B\'ezier \`a tracer).
+   La ligne suivante (``|smooth off|'' pour lisser) sp\'ecifie une option qui s'applique aux donn\'ees suivantes 
+   (c'est-\`a-dire pas pour la ligne enti\`ere, contrairement \`a l'option |-id| dans la premi\`ere ligne) 
+   et la derni\`ere ligne contient quelques donn\'ees suppl\'ementaires.
+
+* si la valeur d'une option ou d'un argument contient des espaces, vous devez inclure cette valeur entre \hbox{|" "|} ou \hbox{|[ ]|}. 
+  Si vous souhaitez ins\'erer un double guillemet |"| texte inclus \hbox{|" "|}, vous devez l'ins\'erer deux fois. 
+  Les guillemets sont utilis\'es pour les cha\^ines, les crochets pour les valeurs num\'eriques et les mots-cl\'es (keywords).
+
+* chaque ligne se terminant par une barre oblique invers\'ee ou anti-slash (|\|) est consid\'er\'ee comme continuant sur la ligne suivante, 
+   comme s'il n'y avait ni saut de ligne ni barre oblique invers\'ee.
+   
+* tout ce qui suit |#| (di\`ese), jusqu'\`a la fin de la ligne, m\^eme \`a l'int\'erieur d'une commande, est consid\'er\'e comme un commentaire et est donc ignor\'e.
+
+* \NEW{5.4}les commentaires multilignes dans un bloc |comment| ... |endcomment| sont autoris\'es dans les fichiers de donn\'ees et de configuration
+\endlist
+
+
+\subchapter Types de donn\'ees.
+
+Therion utilise les types de donn\'ees suivants :
+
+\list
+* {\it keyword/mot-clef} = une s\'equence de caract\`eres  |a-Z|, |a-z|, |0-9| et |_-/|
+             (ne commen\c{c}ant pas par `|-|').
+* {\it ext\_keyword/mot-clef\_\'etendu} = mot-cl\'e pouvant aussi contenir des caract\`eres  |+*.,'|, 
+            Mais pas sur la premi\`ere position.
+* {\it date} = une date (ou un d'intervalle de temps) dans un format sp\'ecifique : \hfil\break
+          |YYYY.MM.DD@HH:MM:SS.SS - YYYY.MM.DD@HH:MM:SS.SS| ou `|-|'
+          pour laisser une date ind\'etermin\'ee.
+* {\it person/personne} =nom et pr\'enom d'une personne s\'epar\'es par des espaces. 
+          Utilisez `|/|' ' pour s\'eparer le pr\'enom et le nom s'il y a plusieurs noms.
+* {\it string/cha\^ine de charact\`ere} = une s\'equence de caract\`eres quelconques. 
+    \NEW{5.3}Les cha\^ines peuvent contenir une balise sp\'eciale |<lang:XX>| pour s\'eparer les traductions. 
+    Dans les cha\^ines multilingues, seul le texte compris entre |<lang:XX>|
+    (o\`u |XX| est la langue s\'electionn\'ee dans le fichier d'initialisation ou de configuration) 
+    et la balise |<lang:YY>| suivante est affich\'e \`a la sortie. 
+    Si aucune correspondance n'est trouv\'ee, tout ce qui pr\'ec\`ede toute balise
+    |<lang:ZZ>|  est affich\'e.
+* {\it units} = unit\'es de longueur prises en charge :
+           meter[s] (m\`etres), centimeter[s] (centim\`etres), inch[es] (pouces), feet[s] (pieds), yard[s]
+           (aussi m, cm, in, ft, yd).
+           Unit\'es d'angle prises en charge : degree[s], minute[s] (aussi deg, min), 
+	   grad[s], mil[s], percent[age] (uniquement pour le clinom\`etre). 
+           Une valeur en degr\'es peut \^etre entr\'ee en notation d\'ecimale
+	   ($x.y$) ou en notation sp\'eciale pour les degr\'es, minutes et secondes
+	   ($deg[{:}min[{:}sec]]$).
+\endlist
+
+
+
+\subchapter Syst\`emes de coordonn\'ees.
+
+Therion prend en charge les transformations de coordonn\'ees dans les syst\`emes de coordonn\'ees g\'eod\'esiques. 
+Vous pouvez sp\'ecifier l'option |cs| (CS pour |C|oordinate |S|ystem) dans les objets  |centreline|, |surface|, |import| and 
+|layout| (ligne de cheminement, surface, importation et mise en page), puis saisir des donn\'ees XY dans un syst\`eme donn\'e. 
+Vous pouvez \'egalement sp\'ecifier la sortie |cs| dans le fichier de configuration. 
+
+Si vous ne sp\'ecifiez pas de |cs| dans votre jeu de donn\'ees, 
+il est suppos\'e que vous travaillez dans un syst\`eme de coordonn\'ees local et aucune conversion n'est effectu\'ee. 
+Si vous sp\'ecifiez |cs| n'importe o\`u dans les donn\'ees, vous devez le sp\'ecifier pour toutes les donn\'ees de g\'eolocalisation 
+(|fix|, |origin| in |layout| etc.). 
+
+|cs| s'applique \`a toutes les donn\'ees d'emplacement suivantes jusqu'\`a ce qu'un autre |cs| soit sp\'ecifi\'e ou sinon jusqu'\`a la fin de l'objet en cours, 
+selon celui qui est indiqu\'e en premier.
+
+Les syst\`emes de coordonn\'ees suivants sont pris en charge :
+
+\list
+* |UTM1| -- |UTM60| = Universal Transverse Mercator pour l'h\'emisph\`ere nord et dans une zone donn\'ee, WGS84 datum.
+* |UTM1N| -- |UTM60N| = idem \`a |UTM1| -- |UTM60|
+* |UTM1S| -- |UTM60S| = UTM pour l'h\'emisph\`ere sud, WGS84 datum.
+* |lat-long|, |long-lat| = latitude (N positive, S n\'egative) et 
+  longitude (E positive, W n\'egative) dans un ordre donn\'e en degr\'es
+  ($deg[{:}min[{:}sec]]$ authoris\'e), WGS84 datum. Par d\'efaut, non pris en charge en sortie.
+* |EPSG:<nombre>| = La plupart des syst\`emes de coordonn\'ees EPSG. 
+  Presque tous les syst\`emes de coordonn\'ees utilis\'es dans le monde ont leur propre num\'ero EPSG. 
+  Pour trouver le num\'ero de votre syst\`eme, voir le fichier |extern/proj4/nad/epsg| dans la distribution de la source Therion.
+* |ESRI:<nombre>| = Similaire \`a EPSG, mais standard ESRI.
+%* |EUR79Z30| = UTM zone 30, EUR79 datum.  % ad-hoc addition not worth mentioning??
+* |JTSK|, |iJTSK| = Syst\`eme tch\'ecoslovaque S-JTSK utilis\'e depuis les ann\'ees 1920 avec les axes sud et ouest (JTSK) 
+  et sa version modifi\'ee avec les axes orient\'es est et nord et les nombres n\'egatifs (iJTSK). 
+  JTSK n'est pas pris en charge en sortie (mais iJTSK lui l'est).
+* |JTSK03|, |iJTSK03| = nouvelle r\'ealisation S-JTSK introduite en Slovaquie en 2011.
+* |OSGB:<H, N, O, S or T><a-Z except I>| =Grille nationale British Ordnance Survey.\NEW{5.4}
+* |S-MERC| = la projection sph\'erique de Mercator, utilis\'ee par divers sites de cartographie en ligne.
+\endlist
+
+\subchapter D\'eclinaison magn\'etique automatique ou manuelle.
+
+Therion int\`egre le mod\`ele de champ g\'eomagn\'etique Terre IGRF\[Voir \www{https://www.ngdc.noaa.gov/IaGa/vmod/}], 
+valable pour la p\'eriode 1900-2020\NEW{5.4}. Il est utilis\'e automatiquement pour le calcul de la d\'eclinaison magn\'etique 
+si la cavit\'e est situ\'ee dans l'espace avec une station fix (g\'eolocalis\'ee) utilisant l'un des syst\`emes de coordonn\'ees g\'eod\'esiques 
+pris en charge en m\^eme temps que la commande date des lignes de cheminement. 
+La d\'eclinaison calcul\'ee est alors r\'epertori\'ee dans le fichier journal pour plus d'informations (LOG file).
+
+
+Si l'utilisateur d\'efinit une |declination| (d\'eclinaison magn\'etique) sp\'ecifique pour le cheminement, cette valeur a priorit\'e sur le calcul automatique.
+
+\subchapter Format des donn\'ees.
+
+La syntaxe des fichiers d'entr\'ee est expliqu\'ee dans la description des commandes individuelles. 
+L'\'etude des exemples de fichiers distribu\'es avec Therion vous aidera \`a comprendre. 
+Voir aussi un exemple en {\it annexe}.
+
+Chacune des sections suivantes d\'ecrit une commande Therion \`a l'aide de la structure suivante :
+The syntax of input files is explained in the description of
+
+{\it Description :} notes concernant cette commande.
+
+{\it Syntaxe :} description de la syntaxe sch\'ematique.
+
+{\it Contexte :} : sp\'ecifie le contexte dans lequel cette commande est autoris\'ee. 
+Le contexte de relev\'e topo ({\it survey}) signifie que la commande doit \^etre entour\'ee par la paire
+|survey ... endsurvey| pair. Le contexte de  {\it scrap} signifie que la commande doit \^etre incluse dans la paire 
+|scrap ... endscrap|. Context {\it all} signifie que la commande peut \^etre utilis\'ee n'importe o\`u.
+
+{\it Arguments :} une liste des arguments obligatoires avec leurs explications.
+
+{\it Options :} une liste des options utilisables.
+
+{\it Command-like options :} options pour les commandes multi-lignes, qui peuvent \^etre sp\'ecifi\'ees parmi les lignes de donn\'ees.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\subsubchapter `encoding'.
+
+\description
+  D\'efinit l'encodage du fichier d'entr\'ee. Cela permet d'utiliser d'autres caract\`eres que les caract\`eres ASCII dans les fichiers d'entr\'ee.
+\enddescription
+
+\syntax
+  |encoding <nom-encodage>|
+\endsyntax
+
+\context
+  Ce devrait \^etre la toute premi\`ere commande du fichier.
+\endcontext
+
+\arguments
+* |<encoding-name>| = pour voir une liste de tous les noms de codage pris en charge, ex\'ecutez Therion avec l'option 
+  |--print-encodings|. `UTF-8' (Unicode) et `aSCII' (7\,bit) sont toujours support\'es.
+\endarguments
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\subsubchapter `input'.
+
+\description
+ Ins\`ere le contenu d'un fichier \`a la place de la commande. 
+ L'extension par d\'efaut est `.th' et peut \^etre omise. 
+ Pour une compatibilit\'e optimale, utilisez les chemins relatifs et les barres Unix `|/|', 
+ et non les barres obliques inverses Windows `|\|', comme s\'eparateurs de r\'epertoires.
+\enddescription
+
+\syntax
+  |input <file-name>|
+\endsyntax
+
+\context
+  all
+\endcontext
+
+\arguments
+*  |<nom-du-fichier>|
+\endarguments
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\subsubchapter `survey'.
+
+\description
+ Survey est la structure de donn\'ees principale. 
+ Les topographies peuvent \^etre imbriqu\'ees, ce qui permet de construire une structure hi\'erarchique. 
+ Habituellement, chaque niveau de cette \'etude de structure hi\'erarchique repr\'esente des cavit\'es, 
+ des zones karstiques de niveaux sup\'erieurs et de niveaux inf\'erieurs, par exemple des galeries.
+ % Each data object must belong to a   survey. 
+
+  Chaque topographie a son propre espace de noms sp\'ecifi\'e par son argument  |<id>|. Les objets 
+  (tels que les stations topos ou les scraps ; voir ci-dessous 
+  qui appartiennent \`a une sous-topographie (subsurvey) de la topographie en cours sont r\'ef\'erenc\'es comme suit :
+  
+  |<object-id>@<subsurvey-id>|,
+  
+  ou, s'il y a plusieurs niveaux de classement :
+  
+  |<object-id>@<subsubsurvey-id>.<subsurvey-id>|.\[Note : il est impossible de faire r\'ef\'erence 
+  \`a un objet rang\'e parmi les topographies de niveau sup\'erieur.]
+  
+  Cela signifie que les identificateurs d'objet ne doivent \^etre uniques que dans le cadre d'une seule et m\^eme topographie. 
+  En cons\'equence, les noms des stations topographiques peuvent \^etre identiques si elles se trouvent dans des topographies diff\'erentes. 
+  Cela permet aux stations d'\^etre num\'erot\'ees \`a partir de 0 dans chaque relev\'e ou d'assembler deux cavit\'es 
+  dans un m\^eme syst\`eme karstique sans renommer les stations du relev\'e.
+\enddescription
+
+\syntax
+      |survey <id> [OPTIONS]
+       ... other therion objects ...
+       endsurvey [<id>]|
+\endsyntax
+
+\context
+  aucun, survey
+\endcontext
+
+\arguments
+*|<id>| = identifiant de la survey/topographie
+\endarguments
+
+\options 
+* |namespace <on/off>| = sp\'ecifie si survey cr\'ee un espace pour les noms (|on| 
+  par d\'efault)
+* |declination <specification>| = d\'efinit la d\'eclinaison magn\'etique qui sera utilis\'ee par d\'efaut pour toutes les donn\'ees des objets de cette topographie 
+  (qui peut \^etre remplac\'ee par les d\'efinitions de d\'eclinaison dans les sous-niveaux). La |<specification>| 
+  peut prendre trois formes :
+
+  1. |[]| une cha\^ine vide. Cela r\'einitialisera la d\'efinition de la d\'eclinaison magn\'etique.
+
+  2. |[<value> <units>]| d\'efinira une valeur unique de d\'eclinaison magn\'etique (aussi pour les topographies non dat\'ees).
+
+  3. |[<date1> <value1> [<date2> <value2> ... ] <units>]| 
+     d\'efinira la d\'eclinaison magn\'etique pour plusieurs dates diff\'erentes. 
+     Ensuite, la d\'eclinaison de chaque vis\'ee sera d\'efinie en fonction de la date sp\'ecifi\'ee par les donn\'ees de l'objet. 
+     Si vous souhaitez d\'efinir explicitement la d\'eclinaison pour les donn\'ees de topographies non dat\'ees, utilisez `|-|' au lieu de la date.
+
+  Si aucune d\'eclinaison magn\'etique n'est sp\'ecifi\'ee mais qu'un syst\`eme de coordonn\'ees g\'eod\'esique est d\'efini, 
+  la d\'eclinaison est automatiquement calcul\'ee \`a l'aide du mod\`ele g\'eomagn\'etique int\'egr\'e.
+    
+  {\bf N.B. :} La d\'eclinaison magn\'etique est positive lorsque le nord magn\'etique est \`a l'Est du nord vrai.
+
+* |person-rename <ancien nom> <nouveau nom>| = renomme une personne dont le nom a \'et\'e chang\'e.
+
+* |title <string/blabla>| = description de l'objet.
+
+* |entrance <nom-de-station>| = sp\'ecifie l'entr\'ee principale de la cavit\'e repr\'esent\'ee par cette topographie. 
+   Si elle n'est pas sp\'ecifi\'e et qu'il y a au moins une station marqu\'ee dans cette topo, celle-ci est \'egalement consid\'er\'ee comme une cavit\'e. 
+   Cette information est utilis\'ee pour l'exportation dans |cave-list|.
+\endoptions
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\subsubchapter `centreline'.
+
+\description
+  Donn\'ees du relev\'e topographique (ligne de cheminement). 
+  La syntaxe est emprunt\'ee \`a Survex avec des modifications mineures. 
+  Le manuel Survex peut \^etre utile en tant que r\'ef\'erence suppl\'ementaire pour l'utilisateur. 
+  Un terme synonyme \`a `centerline' peut \^etre utilis\'e.
+\enddescription
+
+\syntax
+      |centreline [OPTIONS]
+          date <date>
+          team <personne> [<roles>]
+          explo-date <date>
+          explo-team <personne>
+          instrument <quantity list> <description>
+          calibrate <quantity list> <zero error> [<scale>]
+          units <quantity list> [<facteur>] <unites>
+          sd <quantity list> <valeur> <unites>
+          grade <grade list>
+          declination <valeur> <unites>
+          grid-angle <valeur> <unites>
+          infer <quoi> <on/off>
+          mark <type>
+          flags <shot flags>
+          station <station> <commentaire> [<flags>]
+          cs <systeme de coordonnees>
+          fix <station> [<x> <y> <z> [<std x> <std y> <std z>]]
+          equate <liste de stations>
+          data <style> <ordre de lecture>
+          break
+          group
+          endgroup
+          walls <auto/on/off>
+          vthreshold <numbre> <unites>
+          extend <spec> [<station> [<station>]]
+          station-names <prefix> <suffix>
+          ...
+          [SURVEY DaTa]
+          ...
+        endcentreline|
+\endsyntax
+
+\context
+  aucun, survey
+\endcontext
+
+\options
+  * |id <ext_keyword>| = id de l'object
+  * |author <date> <personne>| = auteur des donn\'ees et date de cr\'eation
+  * |copyright <date> <string>| = date du copyright date et d\'esignation du copyright
+  * |title <string>| = description de l'object
+\endoptions
+
+
+\comopt
+  * |date <date>| = Date de la topographie (des mesures). 
+                              Si plusieurs dates sont sp\'ecifi\'ees, un intervalle de temps est cr\'e\'e
+  * |explo-date <date>| = Date d'exploration. Si plusieurs dates sont sp\'ecifi\'ees,
+                                        un intervalle de temps est cr\'e\'e.
+  * |team <personne> [<roles>]| = un membre de l'\'equipe de topographie. 
+                                                     Le premier argument est son nom, les autres d\'ecrivent les r™les de la personne dans l'\'equipe 
+                                                     (facultatif - non utilis\'e actuellement). 
+                                                     Les mots-cl\'es de r™le pris en charge sont les suivants : 
+                                                     station, length, tape, [back]compass, [back]bearing, [back]clino,
+                                                     [back]gradient, counter, depth, station, position, notes, pictures, pics, instruments (insts), assistant (dog).
+  * |explo-team <personne>| = un membre de l'\'equipe d'exploration. 
+  * |instrument <quantity list> <description>| = description de l'instrument utilis\'e obtenir les donn\'ees du relev\'e topographique (m\^emes mots cl\'es que pour le r™le de l'\'equipier)
+  * |infer <quoi> <on/off>| = `|infer plumbs on|' indique au programme d'interpr\'eter les gradients $\pm90\,^\circ$ comme HAUT / BAS 
+                                             (cela signifie qu'aucune correction n'est appliqu\'ee au clinom\`etre). `|infer equates on|' indique au  programme 
+                                             d'interpr\'eter au cas par cas les vis\'ees avec une longueur \'egale \`a 0 en tant que commandes \'equivalentes 
+                                             (ce qui signifie qu'aucune correction n'est appliqu\'ee au d\'ecam\`etre) 
+  * |declination <valeur> <units>| = d\'efinit la d\'eclinaison magn\'etique pour les vis\'ees suivantes $$true\ bearing = measured\ bearing + declination.$$
+                                                       La d\'eclinaison est positive lorsque le nord magn\'etique est \`a l'est du nord vrai. 
+                                                       Si aucune d\'eclinaison n'est sp\'ecifi\'ee ou si la d\'eclinaison est r\'einitialis\'ee (|-|), 
+                                                       une valeur de d\'eclinaison valide est recherch\'ee dans toutes les topographies dans lesquelles 
+                                                       se trouve les donn\'ees de cet objet. Voir les options de d\'eclinaison magn\'etique de la commande |survey|.
+  * |grid-angle <valeur> <units>| = sp\'ecifie l'angle de la grille magn\'etique (d\'eclinaison par rapport au nord de la grille).
+  * |sd <quantity list> <valeur> <units>| = (sd mis pour Ç d\'eviation standard È) d\'efinit l'\'ecart-type pour les mesures donn\'ees. 
+                                                                 La liste quantit\'e peut contenir les mots-cl\'es suivants : 
+                                                                 length, tape, bearing, compass,  gradient, clino, counter, depth, x, y, z, position, easting, dx,
+                                                                 northing, dy, altitude, dz.
+                                                                 
+                                                                 Pour utiliser correctement cette commande, vous devez comprendre ce qu'est un \'ecart-type (ou Ç d\'eviation standard È en anglais). 
+                                                                 Il attribue  une valeur \`a la "propagation" des erreurs dans une mesure. 
+                                                                 En supposant que celles-ci soient normalement distribu\'ees (courbe de Gauss), nous pouvons affirmer que 95,44 \% 
+                                                                 des longueurs r\'eelles se situeront dans les limites de deux \'ecarts-types (2 $\sigma$) de la longueur mesur\'ee. 
+                                                                 Prenons l'exemple des mesures de longueur : un \'ecart-type de 0,25 m signifie que la longueur r\'eelle de ces mesures 
+                                                                 se situe dans la limite de $\pm$ 0,5 m de leur valeur enregistr\'ee par l'instrument dans 95,44 \% des cas. 
+                                                                 Donc, si la mesure est de 7,34 m, la longueur r\'eelle sera tr\`es probablement comprise entre 6,84 m et 7,84 m. 
+                                                                 NB : cet exemple correspond \`a la ``classe 3'' de la BCRA (British Cave Research Association).
+                                                         
+  * |grade <grade list>| = d\'efinit les \'ecarts-types en fonction de la classification sp\'ecifique des topographies \'etablie par la BCRA 
+                                       (British Cave Research Association ; voir d\'etails plus loin pour la commande grade). 
+                                       Tous les \'ecarts-type (sd) ou degr\'es (grade) sp\'ecifi\'es pr\'ec\'edemment sont perdus. 
+                                       Si vous souhaitez changer de SD, utilisez l'option |sd| apr\`es cette commande. 
+                                       Si plusieurs degr\'es de pr\'ecision diff\'erents sont sp\'ecifi\'ees, seul le dernier s'applique.
+                                       Vous pouvez sp\'ecifier des \'ecarts-types pour toute la topographie ou uniquement pour une position donn\'ee. 
+                                       Si vous souhaitez combiner les deux, vous devez les utiliser dans une seule ligne grade.
+  * |units <quantity list> [<facteur>] <units>| = d\'efinir les unit\'es utilis\'ees pour les mesures donn\'ees (m\^eme contenu de liste quantit\'e que pour sd).
+  * |calibrate <quantity list> <zero error> [<echelle>]| = calibrate est utilis\'e pour sp\'ecifier les corrections (\'etalonnage) d'instruments de mesure, 
+                                                                                       via une erreur de z\'ero et un facteur d'\'echelle. 
+                                                                                       Par d\'efaut, l'erreur z\'ero est de 0.0 et le facteur d'\'echelle de 1.0 pour toutes les quantit\'es mesur\'ees. 
+                                                                                       La valeur mesur\'ee sera ensuite calcul\'ee \`a l'aide de la formule suivante : 
+                                                                                       $valeur\ mesuree = (valeur\ lue - zero\ error) \times scale$. 
+                                                                                       M\^eme contenu de liste quantit\'e que pour sd (voir ci-dessus).
+  * |break| = peut \^etre utilis\'e avec des donn\'ees entrelac\'ees pour s\'eparer deux cheminements.
+  * |mark [<station list>] <type>| = d\'efinit le type de stations nomm\'ees.  |<type>| > est l'un des \'el\'ements suivants :  
+                                                      fixed (fixe), painted (marquage \`a la peinture)  et temporary (temporaire ; valeur par default). 
+                                                      S'il n'y a pas de liste de stations, toutes les stations suivantes sont marqu\'ees avec le type choisi.
+  * |flags <shot flags>| = d\'efinir des marqueurs pour les vis\'ees suivantes. Les marqueurs accept\'es sont : 
+                                      |surface| (pour les mesures de surface), 
+                                      |duplicate| (pour des vis\'ees dupliqu\'ees, 
+                                      |splay| (pour les vis\'ees lat\'erales d'habillage qui sont masqu\'ees sur  les dessins et les mod\`eles par d\'efaut). 
+                                      Ceux-ci sont exclus des calculs de longueur. 
+                                      
+                                      Toutes les vis\'ees dont l'une des stations est marqu\'ee soit `|.|' soit `|-|' sont d\'efinies 
+                                      comme des vis\'ees lat\'erales d'habillage par d\'efaut (voir aussi la commande |data|)
+                                      
+                                      Si le marqueur est d\'efini sur |approx[imate]|, la vis\'ee est incluse dans les calculs de longueur totale, 
+                                      mais est \'egalement affich\'ee s\'epar\'ement dans les statistiques de la topographie. 
+                                      Ce marqueur doit \^etre utilis\'e pour les vis\'ees incorrectes ou impr\'ecises et qui doivent \^etre r\'eexamin\'ees.
+                                      
+                                      De plus, ``|not|'' (non) est autoris\'e avant un marqueur.
+    
+  * |station <station> <commentaire> [<flags>]| = ajouter le commentaire de la station et ses marqueurs. 
+                                                                             Si |""| est indiqu\'e comme commentaire, il est ignor\'e.
+                                                                              
+                                                                              Les marqueurs accept\'es sont : 
+                                                                              |entrance| (entr\'ee), |continuation|, |air-draught|
+                                                                              |[:winter|/|summer]| (courant d'air [:hiver/\'et\'e], 
+                                                                              |sink| (perte), |spring| (arriv\'ee d'eau), |doline|, |dig| (surcreusement, d\'esobstruction), 
+                                                                              \NEW{5.3}|arch| (vo\^ute), |overhang| (surplomb). 
+                                                                              De plus, |not| (non) est autoris\'e avant un marqueur, pour supprimer le flag ajout\'e pr\'ec\'edemment. 
+                                                                              
+                                                                              Vous pouvez \'egalement sp\'ecifier des attributs personnalis\'es pour une station \`a l'aide du flag |attr|, 
+                                                                              suivi du nom et de la valeur de l'attribut. 
+                                                                              Exemple:\hfil\break |station 4 "puits \'a explorer" continuation attr code "V"|
+                                                                              
+                                                                              S'il existe un secteur qui a \'et\'e explor\'e, mais pas encore topographi\'e, 
+                                                                              la longueur explor\'ee estim\'ee de ce secteur peut \^etre ajout\'ee \`a une station avec le flag |continuation|
+                                                                              Ajoutez simplement  |explored <explored-length>| aux marqueurs de la station. 
+                                                                              Les longueurs explor\'ees font partie des statistiques topographiques de la cavit\'e et sont affich\'ees s\'epar\'ement.
+                                                                              Exemple:\hfil\break |station 40 "ugly crollway" continuation explor\'ee sur 100 m|
+    
+  * |cs <coordinate system>| = syst\`eme de coordonn\'ees pour les stations ayant des coordonn\'ees fixes.
+  * |fix <station> [<x> <y> <z> [<std x> <std y> <std z>]]| = fixe les coordonn\'ees de la station topo (avec des erreurs sp\'ecifiques). 
+                                                                                             Seule la conversion d'unit\'es, et non l'\'etalonnage, pourra leur \^etre appliqu\'ee
+  * |equate <station list>| = d\'efinit des points topos \'equivalents.
+  * |data <style> <readings order>| = d\'efinit le style des donn\'ees 
+                                                          (normal, topofil, diving, cartesian, cylpolar---coordonn\'ees polaires cylindriques : 
+                                                          dans ce cas les mesures de longueurs sont horizontales et non en suivant la pente---, dimensions, nosurvey---pas de topographie---) 
+                                                          et l'ordre de lecture. La zone de l'ordre de lecture utilise l'un des mots-cl\'es suivants : 
+                                                          station, from, to, tape/length, [back]compass/[back]bearing, [back]clino/\penalty0[back]gradient, 
+                                                          depth, fromdepth, todepth, depthchange, counter, 
+                                                          fromcount, tocount, northing, easting, altitude,
+                                                          up/ceiling\[La dimension peut \^etre sp\'ecifi\'ee comme une paire 
+                                                           |[<from> <to>\char"5D| 
+                                                          c'est \`a dire la dimension au d\'ebut et \`a la fin de la vis\'ee.], 
+                                                          down/floor, left, right, ignore, ignoreall.
+                                                          
+                                                          C'est-\`a-dire : station, depuis, vers, d\'ecam\`etre/longueur, compas/azimuth et mesure inverse, 
+                                                                               clinom\`etre/pente et mesure inverse, profondeur, profondeur depuis, profondeur vers, 
+                                                                               changement de profondeur, compteur (topofil), compteur depuis, compteur vers, 
+                                                                               vers le nord, vers l'est, altitude, haut/vo\^ute, bas/sol, gauche, droite, ignorer, tout ignorer.
+                                                          
+                                                          Voir le manuel du logiciel Survex pour plus de d\'etails.
+                                                          
+                                                          Pour les donn\'ees entrelac\'ees, les mots-cl\'es de nouvelle ligne et de direction sont pris en charge. 
+                                                          Si des mesures avant-arri\`ere (normale / inverse) de compas ou de clinom\`etre sont enregistr\'ees, 
+                                                          la moyenne des deux sera calcul\'ee.
+                                                          
+                                                          \NEW{5.3} Si l'une des stations de vis\'ee porte le nom `|.|' ou `|-|', le marqueur splay (vis\'ee lat\'erale d'habillage) lui est attribu\'e. 
+                                                          Le point `|.|' devrait \^etre utilis\'e pour les vis\'ees se terminant sur des \'el\'ements situ\'es \`a l'int\'erieur de la galerie topographi\'ee, 
+                                                          le tiret `|-|' pour les vis\'ees se terminant sur les parois, au sol ou au plafond. 
+                                                          Bien que Therion ne fasse pas encore de distinction entre eux, il devrait \^etre utilis\'e pour am\'eliorer la mod\'elisation 3D \`a l'avenir.
+    
+  * |group| 
+  * |endgroup| = Cette paire |group/endgroup| permet \`a l'utilisateur d'apporter des modifications temporaires dans presque tous les param\`etres (calibrate, units, sd, data, flags...).
+  * |walls <auto/on/off>| = Active / d\'esactive la cr\'eation de la forme de la galerie (parois automatiques) \`a partir des donn\'ees LRUD pour les vis\'ees suivantes. 
+                                       Si cette option est d\'efinie sur |auto|, le secteur n'est cr\'e\'e que s'il n'y a pas de scrap r\'ef\'eren\c{c}ant la ligne de cheminement (centerline).
+  * |vthreshold <nombre> <units>| = seuil pour interpr\'eter les lectures LRUD comme des lectures gauche-droite-avant-arri\`ere perpendiculaires \`a la vis\'ee (habillage).
+                                                        
+                                                        Si le secteur est horizontal (|inclination < vthreshold|), LR est perpendiculaire \`a la vis\'ee et UD est vertical.
+                                                        
+                                                        Si le secteur est plus ou moins vertical (|inclination > vthreshold|), m\^eme UD devient perpendiculaire au plan - sinon, le rendu ne serait pas correct. 
+                                                        Dans le cas de vis\'ees verticales, la valeur UD est interpr\'et\'ee comme une dimension nord-sud de la station 
+                                                        afin de permettre la mod\'elisation tubulaire des verticales (visualisation des puits)
+    
+  * |extend <spec> [<station> [<station>]]| = contr™le la direction de la ligne de cheminement. |<spec>| est l'un des mots-cl\'es suivants :
+                                                                      
+                                                                      |normal/reverse| = \'etendre les stations donn\'ees et suivantes dans la m\^eme direction / ou la direction inverse par rapport \`a la station pr\'ec\'edente. 
+                                                                                                    Si deux stations sont indiqu\'ees, la direction est appliqu\'ee uniquement \`a la vis\'ee donn\'ee.
+                                                                      
+                                                                       |left/right| = comme ci-dessus, mais la direction est sp\'ecifi\'ee explicitement.
+                                                                       
+                                                                       |vertical| = ne d\'eplacez pas la station (vis\'ee/shot) dans la direction $X$, , utilisez uniquement la composante $Z$ (verticale) de la vis\'ee.
+                                                                       
+                                                                       |start| = sp\'ecifie la station de d\'epart (vis\'ee).
+                                                                       
+                                                                       |ignore| = ignore la sation sp\'ecifi\'ee (vis\'ee), continuer et prolonger le cheminement avec une autre station (vis\'ee) si c'est possible.
+                                                                       
+                                                                       |hide| = masquer (ne pas afficher) la station sp\'ecifi\'ee (vis\'ee) en \'el\'evation prolong\'ee. 
+                                                                                   Si aucune station n'est sp\'ecifi\'ee, |<spec>| est valide pour les vis\'ees sp\'ecifi\'ees suivantes.
+
+  * |station-names <prefix> <suffix>| = ajoute un pr\'efixe / suffixe donn\'e \`a toutes les stations topo de la ligne de cheminement en cours (centerline). Enregistre bon nombre de signes typographiques.
+    
+\endcomopt
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\subsubchapter `scrap'.
+
+\description
+  Un scrap est un morceau de topographie 2D qui ne contient pas de parties qui se superposent 
+  (tous les passages peuvent \^etre dessin\'es sur un papier sans se chevaucher). 
+  Pour les grottes courtes et simples, la cavit\'e enti\`ere peut appartenir \`a un seul scrap. 
+  Dans les syst\`emes complexes, un scrap repr\'esente g\'en\'eralement une salle ou une galerie. 
+  Id\'ealement, un scrap contient environ 100 m de cavit\'e\[Si n\'ecessaire, 
+  les scraps peuvent \^etre beaucoup plus petits---pour afficher juste quelques m\`etres de la cavit\'e. 
+  Lorsque vous d\'ecidez de la taille du scrap, veuillez prendre en compte les \'el\'ements suivants : 
+  L'utilisation de petits scraps peut prendre plus de temps au cartographe pour optimiser les jonctions de scraps. 
+  D'un autre c™t\'e, les algorithmes de d\'eformation de topographie d\'eforment probablement moins les scraps les plus petits. 
+  L'utilisation de scraps trop volumineux peut \'epuiser la m\'emoire de \MP si des remplissages de passages sont fr\'equemment utilis\'es, 
+  de plus l'\'editeur de topos de XTherion est beaucoup moins r\'eactif lors de l'\'edition de gros morceaux.]. 
+  Chaque scrap est trait\'e s\'epar\'ement par \MP ; 
+  les scraps trop volumineux peuvent d\'epasser la m\'emoire de \MP et provoquer des erreurs.
+  
+  Un scrap de topo se compose de symboles, de points, de lignes et de zones. 
+  Voir le chapitre {\it Comment le dessin est-il construit ?} pour une explication sur comment et dans quel ordre ces \'el\'ements  sont affich\'es.
+    
+  La bordure d'un scrap est constitu\'ee de lignes avec les options |-outline out| ou |-outline in| 
+  (les parois de galerie ont |-outline in| par d\'efaut). 
+  Ces lignes ne doivent pas se croiser---sinon Therion (\MP) ne peut pas d\'eterminer l'int\'erieur du scrap
+  et \MP renvoit un message d'avertissement (Warning) ``|scrap outline intersects itself|'' (Le contour du scrap se coupe lui-m\^eme).
+  
+  Chaque bloc a son propre syst\`eme de coordonn\'ees cart\'esiennes local, qui correspond g\'en\'eralement au quadrillage sur papier millim\'etr\'e 
+  (si vous mesurez manuellement les coordonn\'ees des symboles de la topo) ou aux pixels de l'image num\'eris\'ee 
+  (si vous utilisez XTherion). Therion effectue la transformation de ce syst\`eme de coordonn\'ees local en coordonn\'ees r\'eelles 
+  \`a l'aide des positions des stations de relev\'e, qui sont sp\'ecifi\'ees \`a la fois dans le scrap en tant que symboles de points topo 
+  et dans les donn\'ees de la ligne de cheminement (centerline). Si le scrap ne contient pas au moins deux stations de lev\'e avec la r\'ef\'erence 
+  |-name|, vous devez utiliser l'option |-scale| pour calibrer le scrap (ceci est courant pour les sections transverses).
+
+  
+ La transformation comprend les \'etapes suivantes :
+    \list  
+    * Transformation lin\'eaire (d\'ecalage, mise \`a l'\'echelle et rotation) qui fait correspondre `au mieux' 
+       les stations dessin\'ees du scrap aux stations r\'eelles. 
+       `Au mieux' signifie ici que la somme des distances au carr\'e entre les stations correspondantes avant et apr\`es la transformation est minimale. 
+       Le r\'esultat est affich\'e en rouge si l'option |debug| (d\'ebogage) de la commande |layout| (pr\'esentation / mise en page) est activ\'ee (|on|).
+    * Transformation non lin\'eaire du scrap qui (1) d\'eplace les stations topographiques \`a la position correcte, (2) est continue. R\'esultat affich\'e en bleu en mode |debug| (d\'ebogage).
+    * Transformation non lin\'eaire du scrap qui (1) d\'eplace les points joints, (2) ne d\'eplace pas les stations topographiques, (3) est continue. 
+       Enfin, la position des points de contr™le des courbes est ajust\'ee pour pr\'eserver la douceur du rendu. Le r\'esultat produit la topographie finale.
+    \endlist
+    
+\enddescription
+
+\syntax |scrap <id> [OPTIONS]
+       ... commandes point, line (ligne) et area (aire) ...
+       endscrap [<id>]|
+\endsyntax
+
+\context
+  aucun, survey
+\endcontext
+
+\arguments
+  *|<id>| = identifiant de scrap
+\endarguments
+
+\options
+  * |projection <specification>| = sp\'ecifie la projection du dessin. Chaque projection est identifi\'ee par un type 
+                                                   et \'eventuellement par un index sous la forme |type[:index]|. 
+                                                   L'index peut \^etre n'importe quel mot-cl\'e. Les types de projection suivants valides sont les suivants :
+  
+
+    1. |none| = Aucune projection, utilis\'ee pour les sections transverses ou les topographies ind\'ependantes des donn\'ees du relev\'e 
+                      (par exemple, num\'erisation d'anciennes topos o\`u aucune donn\'ee originelle n'est disponible). 
+                      Aucun index n'est autoris\'e pour cette projection.
+
+    2. |plan| = Projection du plan de base (par d\'efaut).
+
+    3. |elevation| = Projection orthogonale (pour une coupe projet\'ee), 
+                            qui prend \'eventuel-lement la direction de la vue comme argument (par exemple |[elevation 10]| ou |[elevation 10 deg]|).
+
+    4. |extended| = Etendue (pour une coupe d\'evelopp\'ee).
+
+  * |scale <specification>| = Est utilis\'e pour une pr\'e-mise \`a l'\'echelle (conversion des coordonn\'ees de pixels en m\`etres) des donn\'ees du scrap. 
+                                            Si la projection du scrap est nulle, il s'agit de la seule transformation effectu\'ee avec des coordonn\'ees. La |<specification>| peut prendre quatre formes :
+
+    1. |<nombre>| = |<nombre>| m\`etres par unit\'e de dessin.
+
+    2. |[<nombre> <unites de longueur>]| = |<nombre> <unites de longueur>| par uni-t\'e de dessin.
+
+    3. |[<num1> <num2> <unites de longueur>]| = |<num1>| unit\'es de dessin correspond en r\'ealit\'e \`a  |<num2> <unites de longueur>|.
+
+    4. |[<num1> ... <num8> [<unites de longueur>]]| = il s'agit du format le plus g\'en\'eral, dans lequel vous sp\'ecifiez, dans l'ordre, 
+                                                                         les coordonn\'ees $x$ et $y$ de deux points du scrap et de deux points de la r\'ealit\'e. 
+                                                                         Vous pouvez \'egalement sp\'ecifier des unit\'es pour les coordonn\'ees des `points dans la r\'ealit\'e'. 
+                                                                         Ce formulaire vous permet d'appliquer \`a la fois la mise \`a l'\'echelle et la rotation.
+  
+  * |cs <systeme de coordonnees>| = suppose que les coordonn\'ees locales (calibr\'ees) des scraps sont donn\'ees dans le syst\`eme de coordonn\'ees sp\'ecifi\'e. 
+                                                           C'est utile pour le placement absolu des esquisses import\'ees lorsqu'aucune station topo n'est sp\'ecifi\'ee.\[S'il y a 
+                                                           des stations topo dans le scrap, la sp\'ecification cs est donc ignor\'ee.]
+  * |stations <liste de noms de stations>| = stations que vous souhaitez tracer sur le scrap, mais qui ne sont pas utilis\'ees pour la transformation de celui-ci. 
+                                                                    Vous n'avez pas \`a les sp\'ecifier (dessiner) avec la commande |point station|.
+  * |sketch <nom_de_fichier> <x> <y>| = sp\'ecification de rep\'erage bitmap d'une esquisse sous-jacente (coordonn\'ees de son coin inf\'erieur gauche).
+  * |walls <on/off/auto>| = sp\'ecifie si le scrap doit \^etre utilis\'ee dans la reconstruction de mod\`ele 3D.
+  * |flip (none)/horizontal/vertical| = (re)tourne le scrap apr\`es transformation.
+  * |station-names <prefix> <suffix>| = ajoute un pr\'efixe / suffixe donn\'e \`a toutes les stations topo du scrap actuel. 
+                                                            Enregistre bon nombre de signes typographiques.
+
+  * |author <date> <personne>| = auteur des donn\'ees (scrap) et date de cr\'eation.
+  * |copyright <date> <string>| = date et nom du copyright
+  * |title <string>| = description de l'objet.
+\endoptions
+
+
+
+
+\subsubchapter `point'.
+
+\description
+Point est une commande permettant de dessiner un symbole de point sur la topographie.
+\enddescription
+
+\syntax
+  |point <x> <y> <type> [OPTIONS]|
+\endsyntax
+
+\context
+  scrap
+\endcontext
+
+\arguments
+  * |<x>| et |<y>| sont les coordonn\'ees d'un objet.
+  * |<type>| determine le type d'objet. Les termes suivants sont accept\'es :
+
+    {\it Objets sp\'eciaux :} 
+    |station|\[Station topo. Pour chaque scrap (\`a l'exception des scraps sans projection - avec option `none'), 
+                   au moins une station ayant une r\'ef\'erence de station (option |-name|) doit \^etre sp\'ecifi\'ee.],  
+    |section|\[|section| est une ancre permettant de placer une section transverse \`a cet endroit.
+                   Ce symbole n'a aucune repr\'esentation visuelle. La section transverse doit \^etre dans un scrap s\'epar\'e 
+                   avec la projection `none' sp\'ecifi\'ee. Vous pouvez le sp\'ecifier via l'option |-scrap|.],
+     |dimensions|\[Utilisez l'option |-value| pour sp\'ecifier les dimensions de la galerie au-dessus / au-dessous du plan 
+                          de la ligne m\'ediane utilis\'e lors de la cr\'eation d'un mod\`ele 3D.] ;
+                   (idem en fran\c{c}ais)
+
+    {\it Etiquettes (labels) :} |label|, |remark|, |altitude|\[Etiquette d'altitude g\'en\'erale. 
+                                         Toutes les altitudes sont export\'ees sous la forme d'une diff\'erence par rapport \`a l'origine de la grille $Z$ (0 par d\'efaut). 
+                                         Pour afficher l'altitude sur la paroi de la galerie, utilisez l'option altitude pour n'importe quel point constituant  la ligne de cette paroi.], 
+    |height|\[Hauteur des formations \`a l'int\'erieur du secteur topographi\'e (comme un puits, un c™ne d'absorption, etc.); voir plus loin pour plus de d\'etails.], 
+    |passage-height|\[Hauteur de la galerie ou de la salle; voir plus loin pour plus de d\'etails.], 
+    |sta- tion-name|\[Si aucun texte n'est sp\'ecifi\'e, le nom de la station la plus proche est utilis\'e.], \penalty-100
+    |date| ; (etiquette, remarque, altitude, hauteur, hauteur de galerie, nom de station, date) ;
+
+    {\it Symboles de remplissages des passages :}\[Contrairement aux autres symboles ponctuels, ceux-ci sont d\'ecoup\'es par la bordure. Voir le chapitre {\it Comment la topographie est-elle construite ?} ]
+    |bedrock|, |sand|, |raft|, |clay|, |pebbles|, |debris|, |blocks|, |water|, |ice|, |guano|, |snow| ; 
+    (roche m\`ere ou en place ou substrat rocheux, sable, gour, argile, cailloux, d\'ebris, blocs, eau, glace, guano, neige) ;
+
+    {\it speleoth\`emes:} |flowstone|, |moonmilk|, |stalactite|, |stalagmite|,
+    |pillar|, |curtain|, |helictite|, |soda-straw|, |crystal|, |wall-calcite|,
+    |popcorn|, |disk|, |gypsum|, |gypsum-flower|, |aragonite|, |cave-pearl|,
+    |rimstone-pool|, |rimstone-dam|, |anastomosis|, |karren|, |scallop|,
+    |flute|, |raft-cone|, \NEW{5.4}|clay-tree| ; 
+    (coul\'ee de calcite, lait de lune, stalactite, stalagmite, pilier, draperie, excentrique, fistuleuse, cristal, paroi concr\'etionn\'ee, 
+    choux-fleurs, disque, gypse, fleur de gypse, aragonite, pisolithe, bassin de gour, bordure de gour, anastomose, karren/karst (rainures de dissolution karstique), 
+    coups de gouge, fl\^ute, c™ne de gour, argile) ;
+
+    {\it Equipement:} |anchor|, |rope|, |fixed-ladder|, |rope-ladder|, |steps|,
+    |bridge|, |traverse|, |camp|, |no-equipment| ;
+    (amarrage, corde, \'echelle fixe, \'echelle de corde, marches, pont, traverse, campement, pas d'\'equipement) ;
+
+    {\it Fin de galerie :} |continuation|, |narrow-end|, |low-end|, 
+    |flowstone-choke|, |breakdown-choke|, \NEW{5.4}|clay-choke|, |entrance| ;
+    (continuation, extr\'emit\'e \'etroite, extr\'emit\'e basse, bouchon de calcite, \'etroiture infranchissable, bouchon d'argile, entr\'ee)
+
+    {\it Autres:} |dig|, |archeo-material|, |paleo-material|, |vegetable-debris|, 
+    |root|, |water-flow|, 
+    |spring|\[Utilisez toujours les symboles |spring| (arriv\'ee d'eau) et |sink| (perte) avec une fl\`eche water-flow pour le d\'ebit d'eau.], 
+    |sink|, \NEW{5.4}|ice-stalactite|, |ice-stalagmite|, |ice-pillar|,
+    |gradient|, |air-draught|\[Le nombre de barbules est d\'efini en fonction de l'option |-scale|.],
+    |map-connection|\[Point virtuel, utilis\'e pour indiquer la connexion entre des topos d\'eplac\'ees (coupe d\'evelopp\'ee, d\'ecalage de topographie).], 
+    |extra|\[Ajout de points au morphing.], 
+    |u|\[Pour d\'efinir des points de symboles par utilisateur.] ; 
+    (creusement, mat\'eriel arch\'eologique, mat\'eriel pal\'eotonlogique, d\'ebris v\'eg\'etaux, racines, \'ecoulement d'eau, source, perte, 
+    stalactite de glace, stalagmite de glace, pilier de glace, gradient, courant d'air, connexion topo, extra, utilisateur).
+
+\endarguments
+
+
+\options
+  * |subtype <mot-clef>| = d\'etermine le sous-type de l'objet. Pour chaque type donn\'e, voici les sous-types possibles :
+    
+    {\it station:}\[Si le sous-type de station n'est pas sp\'ecifi\'e, Therion le lit \`a partir de la ligne de cheminement, 
+                        s'il est sp\'ecifi\'e |water-flow| (arriv\'ee d'eau) le sous-type sera : |permanent| (par d\'efaut), |intermittent| ou |paleo|.]
+                        (c'est le sous-type d\'ecrivant une station topo) 
+    |temporary| (temporaire ; par d\'efaut), |painted| (marquage \`a la peinture), |natural| (\'el\'ement naturel), |fixed| (fixe) ;
+
+    {\it air-draught (courant d'air) :} |winter| (hiver), |summer| (\'et\'e), |undefined| (ind\'efini ; par d\'efaut);
+
+    {\it water-flow :} |permanent| (par defaut), |intermittent|, |paleo|.
+
+    Le sous-type peut \'egalement \^etre indiqu\'e directement dans la sp\'ecification |<type>| en utilisant les deux points superpos\'es `|:|' comme s\'eparateur.\[Par exemple |station:fixed|] 
+    
+    Toute sp\'ecification de sous-type peut \^etre utilis\'ee avec un type d\'efini par l'utilisateur (|u|). 
+    Dans ce cas, vous devrez \'egalement d\'efinir le symbole \MP correspondant (voir le chapitre {\it Nouveaux symboles topographiques}).
+    
+  * |orientation/orient <nombre>| = definit l'orientation du symbole Si rien n'est sp\'ecifi\'e, il est orient\'e vers le nord. 0 $\le$ |number| $<$ 360.
+ 
+  * |align| = alignement du symbole ou du texte. Les valeurs suivantes sont accept\'ees : center, c, top (haut), t, bottom (bas), b, left (gauche), l, right (droite), r, top-left, tl, top-right, tr, bottom-left, bl, bottom-right, br (aller \`a la ligne).
+  * |scale| = \'echelle (taille) du symbole, qui peut \^etre : tiny (xs), small (s), normal (m), large (l), huge (xl) ou une valeur num\'erique. 
+                   `normal' est la valeur par d\'efaut. Les tailles augmentent d'un facteur $\sqrt 2$ donc 
+                   si  $xs \equiv 0.5$, $s \equiv 0.707$, $m \equiv 1.0$, $l \equiv 1.414$ et $xl \equiv 2.0$.
+ 
+  * |place <bottom/default/top>| = change l'ordre d'affichage sur la topographie finale.
+  * |clip <on/off>| = sp\'ecifie si un symbole est coup\'e par la bordure du scrap. Vous ne pouvez pas sp\'ecifier cette option pour les symboles suivants : 
+                              station, station-name, label, remark, date, altitude, height, passage-height.
+  * |dist <distance>| = valide pour des points suppl\'ementaires, sp\'ecifie la distance jusqu'\`a la station la plus proche 
+                                   (ou \`a la station sp\'ecifi\'ee \`a l'aide de l'option |-from|). Si non sp\'ecifi\'e, la valeur appropri\'ee des donn\'ees LRUD est utilis\'ee.
+  * |from <station>| =  valable pour des points suppl\'ementaires, sp\'ecifie la station de r\'ef\'erence.
+  * |visibility <on/off>| = montre/cache le symbole.
+  * |context <point/line/area> <symbol-type>| = (doit \^etre utilis\'e avec les options |sym-bol-hide| et |symbol-show| de la mise en page (layout)) 
+                                                                           le symbole sera cach\'e/affich\'e conform\'ement aux r\`egles sp\'ecifi\'ees par |<symbol-type>|.\[Exemple : 
+                                                                           si vous sp\'ecifiez |-context point air-draught| sur une \'etiquette indiquant la date d'observation, 
+                                                                           la commande |symbol-hide point air-draught| masquera \`a la fois la fl\`eche du cou-rant d'air et l'\'etiquette correspondante.]
+  * |id <ext_keyword>| = identifiant de symbole.
+
+    {\it Options sp\'ecifiques de type de point :}\Nobreak
+
+  * |name <reference>| = si le type de point est station, cette option donne la r\'ef\'erence \`a la station topo r\'eelle.
+  * |extend [prev[ious] <station>]| = si le type de point est |station| et que la projection du scrap est en coupe d\'evelopp\'ee, 
+                                                       vous pouvez ajuster l'extension de l'axe de la ligne de cheminement \`a l'aide de cette option.
+  * |scrap <reference>| = si le type de point est |section|, il s'agit d'une r\'ef\'erence \`a une section transverse du scrap.
+  * |explored <length>| = Si le type de point est |continuation|, vous pouvez sp\'ecifier la longueur des zones explor\'ees mais non encore topographi\'ees. 
+                                       Cette valeur est ensuite affich\'ee dans les statistiques survey/cave.
+  * |text| = texte d'une \'etiquette, d'une remarque ou d'une suite de galerie. Il peut contenir les mots-cl\'es suivants pour le formatage :\[Pour un export en SVG, 
+                seuls les mots-cl\'es| <br>|, |<thsp>|, |<it>|, |<bf>|, |<rm>| et |<lang:XX>|  sont pris en compte; tous les autres sont ignor\'es.]
+    
+    |<br>| = saut de ligne (break).
+    
+    |<center>|/|<centre>|, |<left>|, |<right>| = alignement des lignes pour les \'etiquettes multilignes. Ignor\'e s'il n'y a pas de balise |<br>|.
+    
+    |<thsp>| = petit espace.
+    
+    |<rm>|, |<it>|, |<bf>|, |<ss>|, |<si>| = commutateurs de police de caract\`eres (normal, italique, gras, normal simple, simple italique).
+        
+\NEW{5.3}    |<rtl>| and |</rtl>| = marque le d\'ebut et la fin d'un texte \'ecrit de droite \`a gauche.
+    
+\NEW{5.3}|<lang:XX>| = cr\'ee une \'etiquette multilingue (voir le type string (cha\^ine) pour une description d\'etaill\'ee).
+    
+  * |value| =  valeur de la hauteur, hauteur d'une zone, \'etiquette d'altitude ou dimensions \`a un certain point.
+
+      {\it Hauteur :} selon le signe de cette valeur (positif, n\'egatif ou sans signe), ce type de symbole repr\'esente en g\'en\'eral la hauteur d'une chemin\'ee, 
+                            la profondeur d'un trou ou la hauteur des ressauts. La valeur num\'erique peut \'eventuellement \^etre suivie de `|?|' si elle est estim\'ee. 
+                            Des unit\'es peuvent \^etre ajout\'ees (par exemple, |-value [40? ft]|).
+              
+      {\it hauteur du passage :} les quatre formes de valeur suivantes sont accept\'es : |+<nombre>| (la hauteur du plafond), |-<nombre>| 
+                                               (la profondeur du sol vers le bas ou de la profondeur de l'eau), |<nombre>| (la distance entre le plancher et la vo\^ute) 
+                                               et |[+<nombre> -<number>]| (la distance au plafond et la distance au sol).
+
+      {\it Dimensions:} |-value [<above> <below> [<units>]]| sp\'ecifie les dimensions de la zone au-dessus et au-dessous du plan d'axe utilis\'e dans le mod\`ele 3D.
+\endoptions
+
+
+\subsubchapter `line'.
+
+\description
+Line est une commande permettant de dessiner une ligne sur la topographie. Chaque ligne est orient\'ee et son aspect final peut d\'ependre de son orientation 
+(par exemple, le sens des coches d'une bordure de pente). La r\`egle g\'en\'erale est que l'espace libre (le vide) est \`a gauche et la roche \`a droite. 
+Exemples : le bas d'une pente, le haut d'une chemin\'ee et l'int\'erieur d'une galerie se trouvent respectivement \`a gauche des symboles de pente, de chemin\'ee ou de paroi.
+\enddescription
+
+\syntax
+  |line <type> [OPTIONS]
+         [OPTIONS]
+         ...
+         [LINE DaTa]
+         ...
+         [OPTIONS]
+         ...
+         [LINE DaTa]
+         ...
+       endline|
+\endsyntax
+
+\context
+  scrap
+\endcontext
+
+\arguments
+   * |<type>| est un mot-cl\'e qui d\'etermine le type de ligne. Les types suivants sont accept\'es :
+     
+     {\it passages/galeries :} |wall|, |contour|, 
+     |slope|\[La ligne de pente marque le bord sup\'erieur de la zone en pente. Il est n\'ecessaire de sp\'ecifier |l-size| sur au moins un point. 
+                 La longueur et l'orientation des lignes de pente sont une moyenne des tailles |l-size| sp\'ecifi\'ees et des orientations aux points les plus proches. 
+                 S'il n'y a pas de sp\'ecification d'orientation, les marques de pente sont perpendiculaires \`a la ligne de pente.], 
+     |floor-step|, |pit|, 
+     |ceiling-step|, |chimney|, |overhang|, |ceiling-meander|, 
+     |floor-meander| ;
+     (paroi, contour, pente, ressaut, puits, d\'ecrochement de vo\^ute, chemin\'ee, surplomb, m\'eandre de plafond, m\'eandre au sol) ;
+
+     {\it Remplissage des passages :} |flowstone|, |moonmilk|,  
+     |rock-border|\[Contour ext\'erieur de gros rochers. Si la ligne est ferm\'ee, elle est remplie avec la couleur d'arri\`ere-plan.], 
+     |rock-edge|\[Ar\^etes int\'erieures de gros rochers.], 
+     |water
+     -flow| ; (plancher stalagmitique, lait de lune, bordure rocheuse, ar\^ete rocheuse, \'ecou-lement d'eau) ;
+     
+     {\it Labels / \'etiquettes:} |label| ; (etiquette) ;
+
+     {\it Sp\'ecial:} |border|, |arrow|, 
+     |section|\[Ligne indiquant la position de la section transverse. \NEW{5.3}\ Si les deux points de contr™le (points rouges) d'une courbe de B\'ezier 
+                    (ligne grise) sont indiqu\'es, la ligne de section (bleue) est dessin\'ee vers la projection perpendiculaire (en pointill\'e) du premier point de contr™le et \`a partir de la projection (en pointill\'e) du second point de contr™le de cette section. Aucune courbe de section n'est affich\'ee.\hfil\break\MPpic{xsect.1}], 
+     |survey|\[La ligne de cheminement du lev\'e topographique est automatiquement dessin\'ee par Therion.], 
+     |map-connection|\[Utilis\'e pour indiquer une connexion entre des topographies (en d\'ecalage, ou les m\^emes points en coupe d\'evelopp\'ee).], 
+     |u|\[Utilis\'e pour les symboles de lignes d\'efinis par l'utilisateur.].
+\endarguments
+
+
+\comopt
+       * |subtype <keyword>| = d\'etermine le sous-type de ligne. Les sous-types suivants sont valides pour les types donn\'es :
+
+         {\it wall:} |invisible|, |bedrock| (par defaut), |sand|, |clay|, 
+         |pebbles|, |debris|, |blocks|, |ice|, |underlying|, \NEW{5.4}|overlying|, |unsurveyed|, 
+         |presumed|, |pit|\[Habituellement ouvert \`a la surface.], |flowstone|, |moonmilk| ;
+         (invisible, substrat rocheux, sable, argile, cailloux, d\'ebris, blocs, glace, sous-jacente, sus-jacente, non topographi\'ee, pr\'esum\'ee, puits, 
+         plancher stalagmitique, lait de lune ; 
+
+         {\it border :} |visible| (default), |invisible|, |temporary|, |presumed| ; (visible (par d\'efaut), invisible, temporaire, pr\'esum\'ee) ;
+         
+         {\it water-flow :} |permanent| (par defaut), |conjectural|, |intermittent|;
+	 
+	 {\it survey :} |cave| (par defaut), |surface| (par d\'efaut si la ligne de cheminement poss\`ede un marqueur de surface)
+
+    Le sous-type peut \'egalement \^etre mentionn\'e directement dans la sp\'ecification |<type>| en utilisant `|:|' comme s\'eparateur.\[E.g.~|border:invisible|] 
+    
+    Toute indication de sous-type peut \^etre utilis\'ee avec un type d\'efini par l'utilisateur (|u|). 
+    Dans ce cas, vous devrez \'egalement d\'efinir le symbole \MP correspondant (voir le chapitre {\it Nouveaux symboles topographiques}).
+             
+       * |[LINE DaTa]| sp\'ecifie soit les coordonn\'ees d'un segment de ligne |<x> <y>|,  ou les coordonn\'ees d'une courbe de B\'ezier |<c1x> <c1y> <c2x> <c2y> <x> <y>|, 
+                               o\`u |c| indique le point de contr\^ole.
+      * |close <on/off/auto>| = d\'etermine si une ligne est ferm\'ee ou non.
+       * |mark <mot_clef>| = est utilis\'e pour marquer le point sur la ligne (voir la commande |join|).
+       * |orientation/orient <nombre>| = orientation des symboles sur la ligne. S'il n'est pas sp\'ecifi\'e, 
+                                                            il est perpendiculaire \`a la droite et orient\'e du c™t\'e gauche. 0 $\le$ |number| $<$ 360.
+       * |outline <in/out/none>| = d\'etermine si la ligne sert de limite \`a un scrap. La valeur par d\'efaut est `|out|' pour les parois, `|none|' pour les autres lignes. 
+                                                 Utiliser |-outline in| pour de gros pilers etc.
+       * |reverse <on/off>| = si les points sont indiqu\'es dans l'ordre inverse.
+       * |size <nombre>| = largeur de trait (les tailles gauche et droite prendront la moiti\'e de cette valeur).
+       * |r-size <nombre>| = taille de la ligne \`a droite.
+       * |l-size <nombre>| = m\^eme chose mais \`a gauche. Utilis\'e pour le type |slope| (pente).
+       * |smooth <on/off/auto>| = si la ligne doit \^etre liss\'ee au point donn\'e. |Auto| est la valeur par d\'efaut.
+  * |adjust <horizontal/vertical>| = d\'ecale le point de la ligne \`a aligner horizontalement / verticalement avec le point pr\'ec\'edent 
+                                                     (ou le point suivant s'il n'y a pas de point pr\'ec\'edent). Le r\'esultat est un segment de ligne horizontale / verticale). 
+                                                     Si tous les points de la ligne ont cette option, ils sont align\'es respectivement sur la coordonn\'ee moyenne $y$ ou $x$. 
+                                                     Cette option n'est pas autoris\'ee dans la projection |plan|.
+  * |place <bottom/default/top>| = changements de la disposition lors de l'affichage sur la topographie finale.
+  * |clip <on/off>| = sp\'ecifie si un symbole est coup\'e par la bordure d'un scrap.
+  * |visibility <on/off>| = affiche / cache le symbole.
+  * |context <point/line/area> <symbol-type>| = (\`a utiliser avec les options de mise ne page (layout) |symbol-hide| et |symbol-show|). 
+                                                                           Le symbole sera masqu\'e/affich\'e conform\'ement aux r\`egles du |<symbol-type>| sp\'ecifi\'e.
+
+    {\it Options sp\'ecifiques :}\Nobreak
+
+       * |altitude <value>| = ne peut \^etre sp\'ecifi\'e qu'avec le type paroi (|wall|). Cette option cr\'ee une \'etiquette d'altitude sur la paroi. 
+                                         Toutes les altitudes sont export\'ees sous la forme d'une diff\'erence par rapport \`a l'origine de la grille $Z$ (0 par d\'efaut). 
+                                         Si la valeur est sp\'ecifi\'ee, elle donne la diff\'erence d'altitude du point sur la paroi par rapport \`a la station la plus proche. 
+                                         La valeur peut \^etre pr\'efix\'ee par le mot-cl\'e ``|fix|'', alors aucune station proche ne sera prise en compte ; 
+                                         la valeur absolue donn\'ee \'etant utilis\'ee \`a la place. Les unit\'es peuvent suivre la valeur. 
+                                         Exemples : |+4|, |[+4 m]|, |[fix 1510 m]|.
+       * |border <on/off>| = cette option ne peut \^etre sp\'ecifi\'ee qu'avec le type de symbole `slope' (pente). Il active / d\'esactive la ligne de limite de pente.
+       * |direction <begin/end/both/none/point>| = doit \^etre utilis\'e uniquement avec le type `section'. Il indique o\`u placer une fl\`eche de direction sur la ligne de section transverse. 
+                                                                           `none' est la valeur par d\'efaut.
+       * |gradient <none/center/point>| = Ne peut \^etre utilis\'e qu'avec le type |contour| ; indique o\`u ajouter une marque de gradient (pente) sur la ligne |contour|
+                                                             S'il n'y a pas de sp\'ecification |gradient|, le comportement est d\'ependant de symbol-set (i.e. pas de tick avec l'UIS, tick au milieu avec SKBB).
+       * |head <begin/end/both/none>| = peut \^etre utilis\'e uniquement avec le type `|arrow|' (fl\`eche) et indique o\`u placer la pointe de la fl\`eche. `|end|' est la valeur par d\'efaut.
+       * |text <string>| = valable uniquement pour les lignes d'\'etiquettes (label).
+       * \NEW{5.4}|height <value>| = hauteur d'un puits ou d'une paroi ; disponible comme variable num\'erique \MP |aTTR__height|.
+\endcomopt
+
+\options
+  * |id <ext_keyword>| = Identifiant du symbol.
+\endoptions
+
+
+\subsubchapter `area'.
+
+\description
+Une zone est sp\'ecifi\'ee par les lignes de bordures environnantes. 
+Elles peuvent \^etre de n'importe quel type, mais doivent \^etre r\'epertori\'ees dans l'ordre et chaque paire de lignes cons\'ecutives doit se croiser. 
+Pour vous assurer que les lignes se coupent m\^eme apr\`es la transformation, vous pouvez, par exemple, continuer une bordure de lac 1\,cm 
+derri\`ere une paroi de la galerie---ces chevauchements seront automatiquement d\'ecoup\'es par une des bordures du scrap. 
+Pour y parvenir, vous pouvez utiliser une bordure invisible \`a l'int\'erieur de la galerie.
+\enddescription
+
+\syntax
+  |area <type>
+         place <bottom/default/top>
+         clip <on/off>
+         visibility <on/off>
+       ... border line references ...
+       endarea|
+\endsyntax
+
+\context
+  scrap
+\endcontext
+
+\arguments
+  * |<type>| est un des termes suivants : |water|, |sump|, |sand|, |debris|,
+    |blocks|, |flowstone|, |moonmilk|, |snow|, |ice|, |clay|, |pebbles|,
+    |bedrock|\[une aire vide qui peut \^etre utilis\'ee pour nettoyer l'arri\`ere-plan.], 
+    |u|\[Pour les symboles d\'efinis par l'utilisateur, ils peuvent \^etre suivi d'un sous-type.] ; 
+    (eau, siphon, sable, d\'ebris, blocs, coul\'ee de calcite, moonmilk, neige, argile, galets, roche m\`ere).
+\endarguments
+
+\comopt
+  * La donn\'ees des lignes consistent en leur r\'ef\'erences de lignes de bord (IDs)
+  * |place <bottom/default/top>| = changements de la disposition lors de l'affichage sur la topo finale.
+  * |clip <on/off>| = sp\'ecifie si un symbole est coup\'e par la bordure du scrap.
+  * |visibility <on/off>| = affiche / cache le symbole.
+  * |context <point/line/area> <symbol-type>| = (\`a utiliser avec les options de mise ne page (layout) |symbol-hide| et |symbol-show|). 
+                                                                           Le symbole sera masqu\'e/affich\'e conform\'ement aux r\`egles du |<symbol-type>| sp\'ecifi\'e.
+\endcomopt
+
+\options
+  * |id <ext_keyword>| = Identifiant du symbole.
+\endoptions
+
+
+\subsubchapter `join'.
+
+\description
+  La jonction fonctionne selon deux modes : elle peut relier deux scraps, mais aussi deux ou plusieurs points ou lignes d'une m\^eme topographie.
+  
+  Lorsque vous joignez plus de deux points ou lignes, utilisez une seule commande de jonction pour chacun d'eux, 
+  et non une s\'equence de commandes de jonction pour des paires de points.\[par exemple : 
+  utiliser |join a b c|, et non |join a b| suivi par |join b c|.]
+  
+  Lorsque vous joignez des scraps, seules les parois sont jointes. 
+  Il est pr\'ef\'erable de placer une jonction aussi simple que possible dans la galerie, 
+  sinon vous devrez sp\'ecifier une jonction pour chaque paire d'objets \`a joindre.\[Si 
+  vous voulez qu'un objet coup\'e par une limite de scrap continue jusqu'\`a un scrap voisin, utilisez l'option |-clip off| pour cet objet.]
+  
+  Lorsque vous voulez joindre plus de deux scraps \`a la m\^eme limite de scrap, 
+  une jonction manuelle doit \^etre effectu\'ee, les points de connexion devant \^etre entr\'es dans une d\'eclaration de jonction.
+
+  When joining more than two scraps at the same scrap border, a manual
+  join must be performed where the connection points must be entered
+  in one join statement. \[Comme par ex. 
+  |join origScrapLineWest:end upperScrapLineWest:0 lowerScrapLineWest:0| % line was too long
+  et une autre ligne de commande similaire pour les trois lignes du mur c™t\'e Est.]
+
+\enddescription
+
+\syntax
+  |join <point1> <point2> ... <pointN> [OPTIONS]|
+\endsyntax
+
+\context
+  aucun, scrap, survey
+\endcontext
+
+\arguments
+   * |<pointX>| peut \^etre un ID d'un symbole point ou ligne, optionellement suivi par un point de ligne sp\'ecifique |<id>:<mark>| 
+     (e.g.~|podangl_l31@podangl:mark1|).
+     |<mark>| peut aussi \^etre `|end|' (fin de ligne) ou un point d'index de ligne (o\`u 0 est le premier point). 
+     
+     Il y a un cas sp\'ecial lorsque |<point1>| et |<point2>| sont des ID de scraps---en ce cas, les extr\'emit\'es des scraps les plus proches sont jointes. 
+\endarguments
+
+\options
+  * |smooth <on/off>| indique si deux lignes doivent \^etre connect\'ees en arrondissant l'angle.
+  * |count <N>| (avec l'utilisation de scraps) = Therion va essayer de joindre les scraps en connectant |N| passages/galeries.
+\endoptions
+
+
+\subsubchapter `equate'.
+
+\description
+  D\'efinit l'\'equivalence des stations topographiques.
+\enddescription
+
+\syntax
+  |equate <liste de stations>|
+\endsyntax
+
+\context
+aucun, survey
+\endcontext
+
+
+\subsubchapter `map'.
+
+\description
+  Une `map' (topographie) est un assemblage de scraps ou de plusieurs topographies pr\'esentant le m\^eme type de projection. 
+  Il est possible d'inclure un relev\'e topographique \`a la topographie : cela affichera la ligne de cheminement sur le dessin. 
+  L'objet `map' simplifie la gestion des donn\'ees lors de la s\'election des donn\'ees \`a imprimer. 
+  Voir le chapitre {\it Comment la topographie est-elle construite ?} pour une explication plus d\'etaill\'ee.
+  
+\enddescription
+
+\syntax
+  |map <id> [OPTIONS]
+        ... scrap, survey or other map references ...
+        break
+        ... next level scrap, survey or other map references ...
+        preview <above/below> <other map id>
+      endmap|
+\endsyntax
+
+\context
+  aucun, survey
+\endcontext
+
+\arguments
+  *|<id>| = identifiant de scraps
+\endarguments
+
+\comopt
+  * les lignes de donn\'ees sont constitu\'ees de r\'ef\'erences de scraps ou de topographies. Notez que vous ne pouvez pas les m\'elanger.
+  * Si vous vous r\'ef\'erez \`a la topographie, vous pouvez sp\'ecifier le d\'ecalage auquel cette sous-topographie sera affich\'ee, 
+    ainsi que le type de pr\'e-visualisation de sa position d'origine. 
+    La syntaxe est la suivante :\hfil\break
+    |<map reference> [<offset X> <offset Y> <units>] <above/below/none>|
+  * les scraps situ\'es apr\`es la pause (|break|) seront plac\'es \`a un autre niveau.
+  * |preview <above/below> <other map id>| mettra le contour de l'autre topographie en tant qu'aper\c{c}u par rapport \`a la topographie actuelle.
+    
+    L'aper\c{c}u ne s'affiche que si la topo est au niveau (|map-level|) correspondant \`a celui sp\'ecifi\'e par la commande de s\'election |select|.
+    
+    Utilisez la commande |revise| si vous souhaitez ajouter des topographies de niveaux sup\'erieurs \`a l'aper\c{c}u.
+
+  * |colo[u]r <couleur>| = d\'efinit la couleur de la topographie ; cette option annule le choix automatique lorsque la mise en page (|layout|) sp\'ecifie |colour map-fg [map]|.
+\endcomopt
+
+\options
+  * |projection/proj <plan/elevation/extended/none>| = est requis si la topographie contient le relev\'e.
+  * |title <string>| = description de l'objet.
+  * |survey <id>| =\NEW{5.4} associe un relev\'e \`a une topographie (par exemple, toutes les statistiques de ce relev\'e seront utilis\'ees lorsque cette topographie sera s\'electionn\'ee en sortie).
+\endoptions
+
+\subsubchapter `surface'.
+
+\description
+Sp\'ecification de surface (zone ou espace de terrain ou de sol). 
+Il est possible de l'afficher de deux mani\`eres : sous forme de topographie num\'eris\'ee (possible en topo 2D et aussi en mod\`ele 3D)\[Vous devrez 
+saisir des donn\'ees d'altitude pour afficher la carte topographique dans un mod\`ele 3D. Actuellement, seules les cartes JPEG sont prises en charge en 3D.]) 
+ou sous la forme d'une grille de surface de type mod\`ele num\'erique d'\'el\'evation (MNE/MNT/DEM) (en 3D uniquement).
+\enddescription
+
+\syntax
+|surface [<name>]
+   cs <systeme de coordonnees>
+   bitmap <nom_de_fichier> <calibration>
+   grid-units <unites>
+   grid <origin x> <origin y> <x spacing> <y spacing> <x count> <y count>
+   grid-flip (none)/vertical/horizontal
+   [grid data]
+endsurface|
+\endsyntax
+
+\context
+  aucun, survey
+\endcontext
+
+\comopt
+* |cs <systeme de coordonnees>| = syst\`eme de coordonn\'ees pour le calibrage bitmap et la sp\'ecification d'origine de la grille.
+* |bitmap <filename> <calibration>| = topographie num\'eris\'ee.
+
+  |calibration| peut prendre deux formes :
+  
+  1. |[X1 Y1 x1 y1 X2 Y2 x2 y2 [units]]|, o\`u les variables majuscules $X$ / $Y$ sont les coordonn\'ees sur l'image 
+                                                             (pixels; le coin inf\'erieur gauche valant |0 0|), les variables minuscules $x$ / $y$ sont les coordonn\'ees r\'eelles. 
+                                                             Les unit\'es facultatives s'appliquent aux coordonn\'ees r\'eelles (m\`etres par d\'efaut).
+  
+  2. |[X1 Y1 station1 X2 Y2 station2]|, o\`u les variables $X$ / $Y$ en majuscules sont les coordonn\'ees de l'image et les |stations1| et |station2| sont les noms des stations de topographie.
+  
+* |grid-units <units>| = unit\'es dans lesquelles la grille est sp\'ecifi\'ee. M\`etres par d\'efaut.
+
+* |grid <origin x> <origin y> <x spacing> <y spacing> <x count> <y count>| 
+  
+  |<origin x> <origin y>| = sp\'ecifie les coordonn\'ees du coin en bas \`a gauche (S-W) de la grille
+  
+  |<x spacing> <y spacing>| = distance entre les n{\oe}uds (intersections) de la grille dans les directions E-W et N-S.
+  
+  |<x count> <y count>| = nombre de noeuds (pixels) dans la ligne et nombre de lignes qui forment la grille (voir ci-dessous).
+  
+* |[grid data]| = un flux de nombres donnant l'altitude au niveau de la mer des n{\oe}uds de la grille. 
+                        Il commence \`a l'origine de la grille et remplit la grille en lignes (depuis la ligne W \`a E ;  puis des lignes S \`a N).
+
+ * |grid-flip (none)/vertical/horizontal| = utile si votre grille (export\'ee depuis un autre programme) doit \^etre retourn\'ee.
+
+\endcomopt
+
+
+\subsubchapter `import'.
+
+\description
+  Lecture les donn\'ees du relev\'e topographique dans diff\'erents formats (pour le moment la ligne de cheminement est trait\'ee aux formats * .3d, * .plt, * .xyz). 
+  Les stations topographiques peuvent \^etre r\'ef\'erenc\'ees dans des scraps, etc. 
+  Lors de l'importation d'un fichier Survex 3D, les stations sont ins\'er\'ees dans la hi\'erarchie de la topographie s'il existe une hi\'erarchie identique \`a celle du fichier 3D.
+  \enddescription
+
+\syntax
+  |import <nom_de_fichier> [OPTIONS]|
+\endsyntax
+
+\context
+survey / all\[Uniquement avec les fichiers .3D, o\`u la structure du relev\'e est sp\'ecifi\'ee.]
+\endcontext
+
+\options
+  * |filter <prefix>| = si sp\'ecifi\'e, seules les stations avec un pr\'efixe donn\'e et des vis\'ees entre elles seront import\'ees. Le pr\'efixe sera supprim\'e des noms de station.
+  * |surveys (create)/use/ignore| = sp\'ecifie comment importer une structure de relev\'e topographique (fonctionne uniquement avec les fichiers .3d).
+
+     |create| = diviser les stations en sous-niveaux. S'il n'y en a pas, les cr\'eer. 
+
+     |use| = r\'epartir les stations en sous-niveaux.
+
+     |ignore| = ne pas r\'epartir les stations en sous-niveaux.
+  * |cs <systeme de coordonnees system>| = syst\`eme de coordonn\'ees pour les stations avec des coordonn\'ees fixes.
+  * |calibrate [<x> <y> <z> <X> <Y> <Z>]| = les coordonn\'ees du fichier import\'e sont transf\'er\'ees des coordonn\'ees minuscules aux coordonn\'ees majuscules.
+\endoptions
+
+
+\subsubchapter `grade'.
+
+\description
+   Cette commande est utilis\'ee pour stocker des pr\'ecisions sur les donn\'ees pr\'ed\'efinies pour la ligne de cheminement.
+   Les grades ou degr\'es int\'egr\'es sont : BCRA\[voir \www{http://bcra.org.uk/surveying/} ;
+     la syntaxe est : |BCRa{\it n}|, o\`u |{\it n}| peut \^etre |3| ou |5|. Pour info, voici le classement BCRA des topographies suivant leur pr\'ecision :
+     
+     Degr\'e |1| $\gg$ Esquisse de faible pr\'ecision o\`u aucune mesure n'a \'et\'e faite
+     
+     Degr\'e |2| $\gg$ Peut \^etre utilis\'ee, si n\'ecessaire, pour d\'ecrire un croquis dont la pr\'ecision est interm\'ediaire entre les niveaux |1| et |3| (\`a utiliser uniquement si n\'ecessaire).
+     
+     Degr\'e |3| $\gg$ Relev\'e magn\'etique approximatif. Angles horizontaux et verticaux mesur\'es \`a $\pm$2,5$^{\circ}$; distances mesur\'ees \`a $\pm$50 cm ; erreur de position de la station inf\'erieure \`a 50 cm.
+     
+     Degr\'e |4| $\gg$ Peut \^etre utilis\'ee, si n\'ecessaire, pour d\'ecrire une topographie qui ne r\'epond pas \`a toutes les exigences de la classe |5| mais est plus pr\'ecise qu'une topo de classe |3|. (\`a utiliser uniquement si n\'ecessaire).
+     
+     Degr\'e |5| $\gg$ Relev\'e magn\'etique. Angles horizontaux et verticaux mesur\'es \`a $\pm$1$^{\circ}$ ; les distances doivent \^etre observ\'ees et enregistr\'ees au centim\`etre pr\`es et les positions des stations identifi\'ees \`a moins de 10 cm.
+     
+     Degr\'e |6| $\gg$ Relev\'e magn\'etique plus pr\'ecis que la classe |5|. C'est-\`a-dire avec une pr\'ecision angulaire de $\pm$0,5$^{\circ}$ ; les lectures du clinom\`etre doivent avoir la m\^eme pr\'ecision. L'erreur de position de la station doit \^etre inf\'erieure \`a $\pm$2,5 cm, ce qui n\'ecessitera l'utilisation de tr\'epieds dans toutes les stations ou d'autres rep\`eres de stations fixes.
+     
+     Degr\'e |X| $\gg$ Topographie bas\'ee principalement sur l'utilisation d'un th\'eodolite / station totale (tach\'eo-m\`etre).] 
+     et UISv1\[voir \www{http://www.uisic.uis-speleo.org/UISmappingGrades.pdf} ;
+     la syntaxe est : |UISv1\_{\it n}|\NEW{5.4}, o\`u |{\it n}| est de |-1| \`a |6| ou |X| ; alors que 
+     |-1| to |2| ne sont 2 sont uniquement l\`a \`a titre d'information, |X| n\'ecessite des donn\'ees sd dans la |centerline|.
+     Les degr\'es |2| et |4| ne doivent \^etre utilis\'ees que lorsque des conditions mat\'erielles ont emp\^ech\'e la topographie de satisfaire \`a toutes les exigences
+     requises pour le degr\'e sup\'erieur et qu'il est difficile de recommencer.].
+
+   Voir la description de l'option |sd| pour la commande |centreline| afin de d\'efinir vos propres degr\'es de pr\'ecision.
+\enddescription
+
+\syntax:
+  |grade <id>
+        ...
+        [<quantity list> <value> <units>]
+        ...
+        endgrade|
+\endsyntax
+
+\context
+  all
+\endcontext
+
+
+
+\subsubchapter `revise'.
+
+\description
+ Cette commande est utilis\'ee pour d\'efinir ou modifier les propri\'et\'es d'un objet d\'ej\`a existant.
+\enddescription
+
+\syntax
+  Pour les objets cr\'e\'es avec des commandes ``single line'' la syntaxe est la suivante
+  
+  |revise id [-option1 value1 -option2 value2 ...]|
+  
+  Pour les objets cr\'e\'es avec des commandes ``multi-lignes'', la syntaxe est la suivante :
+
+|revise id [-option1 value1 -option2 value2 ...]
+  ...
+  optionX valueX
+  data
+  ...
+endrevise|
+\endsyntax
+
+\context
+  all
+\endcontext
+
+\arguments
+  L'identifiant signifie ici identifiant de l'objet (car l'identifiant d'un objet que vous voulez r\'eviser doit toujours \^etre sp\'ecifi\'e).
+\endarguments
+
+
+
+\subchapter Attributs personnalis\'es.
+
+Les objets  {\it survey}, {\it centreline}, {\it scrap}, {\it point}, {\it 
+line}, {\it area}, {\it map} et {\it surface} peuvent contenir des attributs d\'efinis par l'utilisateur 
+sous la forme |-attr <nom> <valeur>|. |<nom>| peut contenir des caract\`eres alphanum\'eriques, |<valeur>| est une cha\^ine de charact\`eres (string).
+
+Les attributs personnalis\'es sont utilis\'es dans l'exportation de la topographie en fonction du format de sortie:
+\list
+* lors de l'exportation de {\it shapefiles} (fichiers de donn\'ees vectorielles pour syst\`eme d'infor-mation g\'eographique---SIG), elles sont \'ecrites directement dans le fichier dbf associ\'e. 
+* dans les topographies (`maps') g\'en\'er\'ees \`a l'aide de \MP (PDF, SVG), les attributs sont \'ecrits dans le fichier source \MP 
+   sous forme de cha\^ines (nomm\'ees ainsi: |aTTR_<nom>|)) et peuvent \^etre \'evalu\'es et utilis\'es par l'utilisateur dans des macros de d\'efinition de symboles.
+  
+  Vous pouvez tester la pr\'esence d'une telle variable avec |if known aTTR_<name>: ... fi|.
+\endlist
+
+
+\subchapter XTherion.
+
+XTherion est une GUI (interface utilisateur graphique) pour Therion. 
+Il aide beaucoup \`a la cr\'eation de fichiers de donn\'ees d'entr\'ee. 
+Actuellement, il fonctionne dans trois modes principaux : \'editeur de texte, \'editeur de dessin et compilateur \[Ici, 
+nous sommes concern\'es par la cr\'eation de donn\'ees, ce qui explique que cette section ne d\'ecrit que les deux premiers modes. 
+Pour tout ce qui concerne les actions de compilation, voir le chapitre d\'edi\'e {\it Compilation des donn\'ees}.]%{\it Processing data}.]
+
+XTherion n'est pas n\'ecessaire pour Therion lui-m\^eme.
+Vous pouvez modifier les fichiers d'entr\'ee dans votre \'editeur de texte favori et ex\'ecuter Therion \`a partir de la ligne de commande. 
+XTherion n'est donc pas la seule interface graphique pouvant \^etre utilis\'ee avec Therion. 
+Il serait possible d'en \'ecrire une meilleure, ce qui serait plus convivial, plus WYSIWYG, plus rapide, plus robuste et plus facile \`a utiliser. Des volontaires ?
+
+Ce manuel ne d\'ecrit pas des \'el\'ements familiers tels que `si vous souhaitez enregistrer un fichier, allez au menu Fichier et s\'electionnez Enregistrer ou appuyez sur Ctrl-s'. 
+Parcourez le menu du haut pendant une minute pour vous familiariser avec XTherion.
+
+Pour chaque mode de fonctionnement, il existe un menu suppl\'ementaire \`a droite ou \`a gauche. 
+Les sous-menus peuvent \^etre repli\'es ; vous pouvez les d\'erouler en cliquant sur le bouton du menu. 
+Pour la plupart des menus et des boutons, il y a une courte description (traduite) dans la ligne d'\'etat, 
+il n'est donc pas difficile de deviner la signification de chacun des sous-menus. 
+L'ordre des sous-menus sur le c™t\'e peut \^etre personnalis\'e par l'utilisateur. 
+Cliquez avec le bouton droit sur le bouton de menu et s\'electionnez dans le menu celui des autres menus avec lequel il doit \^etre \'echang\'e.
+
+\subsubchapter XTherion---text editor.
+
+L'\'editeur de texte de XTherion' offre des outils int\'eressant qui peuvent aider \`a la cr\'eation des fichiers texte d'entr\'ee : 
+support de l'encodage Unicode et capacit\'e \`a ouvrir plusieurs fichiers en parall\`ele\[L'encodage des fichiers est sp\'ecifi\'e sur la premi\`ere ligne de chaque fichier. 
+Cette ligne est cach\'ee par XTherion mais peut \^etre accessible indirectement via le menu de droite.]
+
+Pour faciliter la saisie des donn\'ees, l'\'editeur prend en charge le formatage des donn\'ees de la ligne de cheminement sous forme de tableau. 
+Il existe un menu Table de donn\'ees ({\it Data table}) pour la saisie des donn\'ees. 
+Il peut \^etre personnalis\'e en fonction des  donn\'ees de commandes utilisateur en appuyant sur une touche 
+`Num\'eriser le format des donn\'ees' ({\it Scan data format}) lorsque le curseur se trouve sous la sp\'ecification de la donn\'ee de commande 
+(option `data' dans la commande `centreline').
+
+\subsubchapter XTherion---map editor.
+
+L'\'editeur de topographies/cartes vous permet de dessiner et d'\'editer des topos de mani\`ere totalement interactive. 
+Mais n'en attendez pas trop. XTherion n'est pas un \'editeur vraiment WYSIWYG. 
+Il affiche uniquement la position et non la forme r\'eelle des symboles de points ou de lignes dessin\'es. 
+Visuellement, il n'y a pas de diff\'erence entre une excentrique et une \'etiquette de texte : 
+les deux sont rendus sous forme de points simples. 
+Le type et les autres attributs de tout objet sont sp\'ecifi\'es uniquement dans les menus {\it Contr™le de point} et {\it Contr™le de ligne}.
+
+\ifx\pdfoutput\undefined\else
+\leavevmode\llap{\smash{\raise10pt\hbox{\pdfannot width 6cm height 0cm depth  4cm 
+{/Subtype /Text 
+ /Name /Help
+ /Contents (Aide: 1. Que fait le calcul de bouclages ?
+            2. Pourquoi utilise-t-on MetaPost ?)
+ %/Contents (Hints: 1. What does loop closure do?
+ %           2. Why do we use MetaPost?)
+}}} \qquad}\fi
+{\it Exercice :} Trouvez deux raisons importantes pour lesquelles la topographie dessin\'ee dans XTherion ne peut pas \^etre identique \`a la sortie Therion. 
+(Si vous r\'epondez \`a cette question, vous saurez pourquoi XTherion ne sera jamais un v\'eritable \'editeur WYSIWYG. 
+La paresse des auteurs n'est pas la bonne r\'eponse.)
+
+Commen\c{c}ons par d\'ecrire l'utilisation typique de l'\'editeur de dessins. 
+Tout d'abord, vous devez choisir la partie de la cavit\'e \`a dessiner.\[Il est impossible
+de dessiner plus d'un scrap dans un fichier, sinon dans ce cas, tous les scraps inactifs seront affich\'es en jaune.]
+
+Apr\`es avoir cr\'e\'e un nouveau fichier dans l'\'editeur de dessin, vous pouvez charger une ou plusieurs {\bf images} 
+(esquisses du relev\'e topo num\'eris\'ees de la cavit\'e\[XTherion ne peut pas mettre \`a l'\'echelle ni imposer une rotation \`a des images ; 
+En cons\'equences, utilisez la m\^eme orientation, \'echelle et r\'esolution (DPI) pour toutes les images utilis\'ees dans le m\^eme scrap.]) 
+en tant qu'arri\`ere-plan du dessin. 
+Cliquez sur le bouton {\it Ins\'erer} dans le menu {\it Images d'arri\`ere-plan}. 
+Malheureusement, en tant que limitation du langage Tcl/Tk, seules les images GIF, PNM et PPM (plus PNG et JPEG si vous avez install\'e l'extension tkImg) 
+sont prises en charge. De plus, XTherion prend en charge le format XVI (image vectorielle XTherion), qui affiche les informations de la ligne de cheminement 
+et les LRUD sur l'arri\`ere-plan, ainsi que les donn\'ees PocketTopo export\'ees au format Therion (voir ci-dessous). 
+Toutes les images ouvertes sont plac\'ees dans le coin sup\'erieur gauche de la zone de travail. D\'eplacez-les en double-cliquant 
+et en les faisant glisser avec le bouton droit de la souris ou en utilisant le menu. 
+Pour obtenir de meilleures performances sur des ordinateurs plus lents, il est possible de ne pas charger temporairement une image inutilis\'ee 
+de la m\'emoire en d\'ecochant la case \`a cocher {\it Visibilit\'e}. Il est possible d'ouvrir un fichier existant sans charger d'images d'arri\`ere-plan \`a l'aide
+du menu {\it Ouvrir XP}. \[{\it Note :} Therion n'utilise pas d'images de fond tant que vous ne les assignez pas \`a un scrap sp\'ecifique 
+avec l'option |-sketch|.]
+
+Le r\'eglage de la taille et du zoom de la {\bf zone de dessin} s'effectue dans le menu correspondant. 
+Le r\'eglage automatique ({\it auto adjust}) calcule la taille optimale de la zone de travail en fonction 
+de la taille et de la position des images d'arri\`ere-plan charg\'ees.
+
+Apr\`es ces \'etapes de pr\'eparation, vous \^etes pr\^et pour dessiner ou, plus pr\'ecis\'ement, pour la {\bf cr\'eation d'un fichier de donn\'ees cartographiques (map)}. 
+Il est important de noter que vous cr\'eez en fait un fichier texte conforme \`a la syntaxe d\'ecrite dans le chapitre 
+{\it Format des donn\'ees}. En r\'ealit\'e, seul un sous-ensemble des commandes Therion est utilis\'e dans l'\'editeur de dessins : 
+op\'erations de suppression multilignes |scrap ... endscrap| pouvant contenir des commandes |point|, |ligne| et |aires|. 
+(Cf. le chapitre {\it format de donn\'ees}). Cela correspond \`a une section de la topographie dessin\'ee \`a la main, 
+constitu\'ee de points, de lignes et de zones remplies.
+
+La premi\`ere \'etape consiste donc \`a d\'efinir le {\bf scrap} par une commande multiligne |scrap ... endscrap|. 
+Dans le menu {\it Commandes de fichier}, cliquez sur le sous-menu {\it Action} et s\'electionnez {\it Ins\'erer un scrap}. 
+Cela change le bouton {\it Action} en {\it Insert scrap} s'il avait une autre valeur. 
+Apr\`es avoir appuy\'e sur ce bouton, un nouveau scrap sera ins\'er\'ee au d\'ebut du fichier. 
+Vous devriez voir ces nouvelles lignes dans la fen\^etre preview au dessus du bouton {\it Insert scrap} :
+
+|scrap - scrap1
+endscrap
+end of file|
+
+Cette fen\^etre est une description simplifi\'ee de la structure du fichier texte tel qu'il sera enregistr\'e par XTherion.
+Uniquement les commandes |scrap|, |point|, |line|, |text|---voir la raison ci-dessous-- et leurs types (pour |point| et |line|) ou ID (pour |scrap|) sont affich\'es. 
+
+L'int\'egralit\'e des commandes est affich\'ee dans le menu {\it Command preview}.
+
+Pour modifier des commandes cr\'e\'ees pr\'ec\'edemment, il existe des menus suppl\'ementaires, comme 
+par exemple, {\it Contr™le du scrap} pour la commande du |scrap|. Ici, vous pouvez modifier l'ID (tr\`es important!) et d'autres options. 
+Pour plus de d\'etails, voir le chapitre {\it Format des donn\'ees}.
+
+Il est maintenant possible d'ins\'erer des {\bf symboles de points}. 
+Comme pour l'insertion d'un scrap, acc\'edez au menu des {\it commandes de fichiers}, 
+cliquez sur le sous-menu {\it Action} et s\'electionnez {\it Ins\'erer un point}. 
+Appuyez sur le bouton {\it Ins\'erer un point} r\'ecemment renomm\'e. Un raccourci pour tout cela est Ctrl-p. 
+Cliquez ensuite sur l'emplacement souhait\'e dans la zone de travail et vous verrez un point bleu repr\'esentant un symbole de point. 
+Ses attributs peuvent \^etre ajust\'es dans le menu de {\it contr™le de point}. 
+Vous resterez en mode `insertion' : chaque clic sur la zone de travail ajoute un nouveau symbole de point. 
+Veillez \`a ne pas cliquer deux fois au m\^eme endroit---vous ins\'ereriez deux symboles de point au m\^eme endroit ! 
+Pour passer du mode `ins\'erer' au mode `s\'electionner', appuyez sur la touche {\it Echap/Esc} du clavier 
+ou sur le bouton de {\it s\'election} du menu {\it Commandes de fichiers}.
+
+Quel sera l'ordre des commandes dans le fichier de sortie ? 
+Exactement le m\^eme que dans le plan du menu {\it Commandes Fichier}. 
+Les objets point, ligne et texte nouvellement cr\'e\'es sont ajout\'es avant la ligne marqu\'ee dans la description de la structure. 
+Il est possible de changer l'ordre en s\'electionnant une ligne et en appuyant sur les boutons 
+{\it D\'eplacer vers le bas}, {\it D\'eplacer vers le haut} ou {\it D\'eplacer vers} dans le menu {\it Commandes de fichier}. 
+De cette fa\c{c}on, vous pouvez \'egalement d\'eplacer des objets entre des scraps.
+
+{\bf Dessiner des lignes} est similaire \`a dessiner dans d'autres programmes de dessin vectoriel qui fonctionnent avec les courbes de B\'ezier. 
+(Devinez comment entrer dans le mode d'insertion de ligne, autre que d'utiliser le raccourci Ctrl-l.) 
+Cliquez \`a l'endroit o\`u le premier point doit se situer, puis faites glisser la souris en maintenant le bouton gauche enfonc\'e 
+et rel\^achez-le \`a l'emplacement o\`u devrait se trouver le premier point de contr™le. 
+Puis cliquez ailleurs (ce point sera le deuxi\`eme point de la courbe) et faites glisser la souris (en ajustant simultan\'ement le deuxi\`eme point de contr™le 
+de l'arc pr\'ec\'edent et le premier point de contr™le du suivant). 
+Si cette explication semble trop obscure, on peut s'exercer \`a travailler avec certains programmes 
+de dessin vectoriel standard avec une documentation compl\`ete. 
+La ligne sera termin\'ee apr\`es avoir quitt\'e le mode d'insertion. 
+Le d\'ebut et l'orientation de la ligne sont marqu\'es par une petite coche orange \`a gauche au premier point.
+
+Pour les symboles de lignes, il existe deux menus de contr™le : {\it Contr™le de ligne} et {\it Contr™le de point de ligne}. 
+Le premier d\'efinit les attributs pour toute la courbe, comme le type ou le nom. 
+La case \`a cocher {\it Inverser} est importante : Therion requiert des courbes orient\'ees et il n'est pas rare que vous commenciez \`a dessiner du mauvais c™t\'e. 
+Le menu de {\it contr™le de point de Ligne} vous permet d'ajuster les attributs de n'importe quel point s\'electionn\'e sur la ligne, 
+par exemple une courbe lisse \`a cet endroit (activ\'ee par d\'efaut) ou la pr\'esence de points de contr™le voisins (cases \`a cocher |<<| et |>>|).
+
+Les {\bf Aires} sont sp\'ecifi\'ees par leurs lignes environnantes. 
+Cliquez sur {\it Ins\'erer une zone}, puis sur les lignes entourant la zone souhait\'ee. 
+Elles sont automatiquement ins\'er\'ees dans le champ {\it Aire} et nomm\'es (s'ils ne le sont pas d\'ej\`a). 
+Une autre m\'ethode consiste \`a les ins\'erer en tant que commande |text|, dont le contenu 
+(entr\'e dans le menu de l'\'editeur de texte de l'\'editeur de carte) est la commande multilignes habituelle |area ... endarea| (voir le chapitre {\it Format des donn\'ees}).\[ATTENTION ! 
+La commende |text| n'est pas une commande Therion, mais uniquement un hack pour un bloc de texte arbitraire dans XTherion. 
+Dans le fichier enregistr\'e par XTherion, il n'y aura que ce que vous entrerez dans l'{\it Editeur de Texte} 
+ou ce que vous verrez dans la {\it Commande preview}.
+Cela pourra \^etre une d\'efinition d'aire, mais aussi tout ce que vous voulez, comme par exemple un commentaire commen\c{c}ant avec le caract\`ere `|\#|'.]
+
+Si vous tracez des scraps sans projection, il est n\'ecessaire de {\bf calibrer} la zone de dessin. 
+L'\'echelle ne peut \^etre d\'efinie que d'une seule mani\`ere dans XTherion, \`a l'aide des coordonn\'ees de deux points 
+(sp\'ecifi\'ees \`a la fois dans le syst\`eme de coordonn\'ees image et dans le syst\`eme de coordonn\'ees `r\'eel').
+
+Apr\`es avoir s\'electionn\'e un scrap (cliquez sur son en-t\^ete dans le menu {\it Commandes Fichier}), 
+deux petits carr\'es rouges reli\'es par une fl\`eche rouge apparaissent (par d\'efaut, ils se trouvent dans les coins inf\'erieurs de la zone de dessin). 
+Vous devez les faire glisser vers des points dont les coordonn\'ees sont connues, 
+g\'en\'eralement des intersections de lignes de grille en mm sur le dessin num\'eris\'e. Si vous ne pouvez pas voir ces points, vous pouvez soit :
+\list
+* Appuyer sur le bouton {\it Scale} dans le menu {\it Scraps} et cliquez \`a deux endroits diff\'erents 
+  de l'image o\`u les extr\'emit\'es de la fl\`eche de calibration doivent se trouver, ou
+* d\'eplacer le pointeur de la souris sur la position souhait\'ee, lire les coordonn\'ees du pointeur dans la barre d'\'etat 
+  et entrer ces coordonn\'ees dans les zones de {\it points de l'\'echelle de l'image} du contr™le {\it Scraps}. 
+  Apr\`es avoir rempli les paires de coordonn\'ees $X1$, $Y1$ et $X2$, $Y2$, la fl\`eche de calibrage sera d\'eplac\'ee en cons\'equence. 
+\endlist
+Ensuite, vous devez entrer les coordonn\'ees r\'eelles de ces points $(X1, Y1, X2, Y2)$.
+
+En {\bf mode s\'election}, vous pouvez s\'electionner des objets de lignes ou de points existants 
+et d\'efinir leurs attributs dans les menus correspondants, les d\'eplacer ou les supprimer 
+(Ctrl-d ou bouton {\it Action} dans le menu {\it Commandes de fichiers} apr\`es avoir d\'efini {\it Action} sur {\it Supprimer}).
+
+
+% [adding or deleting a point on the curve]
+
+Il existe un menu {\it Rechercher et s\'electionner} qui permet de basculer facilement d'un objet \`a l'autre et de visualiser 
+ce que vous ne pouvez pas voir au premier regard sur l'image. 
+Par exemple, si vous entrez l'expression `station' et que vous appuyez sur {\it Afficher tout}, 
+toutes les stations de l'image deviennent rouges.
+
+XTherion ne v\'erifie pas la syntaxe. 
+Il n'\'ecrit que les objets dessin\'es avec leurs attributions dans un fichier texte. 
+Toutes les erreurs sont d\'etect\'ees uniquement lorsque vous traitez ces fichiers avec Therion (compilation).
+
+CONSEIL : la saisie simultan\'ee de symboles du m\^eme type vous permet de gagner beaucoup de temps, 
+                   car vous n'avez pas besoin de changer le type de symbole ni les options de remplissage pour chaque nouveau symbole. 
+                   La {\it bo”te \`a options} conserve l'ancienne valeur saisie et il suffit donc de changer quelques caract\`eres.\[Dans le cas des stations topographiques, 
+                   XTherion incr\'emente automatiquement le num\'ero de la station \`a chaque nouveau symbole ins\'er\'e.] 
+                   Il est pr\'ef\'erable de commencer par dessiner toutes les stations topo 
+                   (n'oubliez pas de leur donner des noms en fonction des noms r\'eels dans la commande de ligne de cheminement), 
+                   afin que toutes les parois de galeries soient suivies par tous les autres symboles ponctuels, lignes et zones. 
+                   Enfin, dessinez des coupes transversales.
+
+\subsubchapter Outils additionnels.
+
+\NEW{5.3}{\bf Help/Calibrate bitmap} g\'en\`ere un fichier MaP compatible `OziExplorer' \`a partir des donn\'ees de g\'eor\'ef\'erencement 
+contenues dans un fichier topographique PDF.\[Les informations de calibration pour neuf points distincts sont pr\'esentes 
+si la ligne de cheminement contient des stations fix\'ees \`a l'aide d'un syst\`eme de coordonn\'ees g\'eod\'esiques.]
+
+Si la topographie au format PDF a \'et\'e convertie en raster \`a l'aide d'un programme externe, 
+Converter utilise une image raster {\it et} une topographie PDF portant le m\^eme nom de base 
+situ\'es dans le m\^eme r\'epertoire pour calculer les donn\'ees d'\'etalonnage.
+
+Si le fichier PDF est utilis\'e directement, vous devez d\'efinir le format de DPI et de sortie avant la conversion 
+automatique en format raster.\[|ghostscript| et |convert| doivent \^etre install\'es sur votre syst\`eme. 
+Notez, que l'installation Therion pour Windows n'inclue pas |ghostscript|].
+
+\NEW{5.3}Les {\bf donn\'ees PocketTopo} export\'ees au format Therion\[C'est un format de texte sp\'ecial 
+qui doit \^etre import\'e \`a l'aide de XTherion et ne peut pas \^etre trait\'e directement par Therion.] 
+\`a partir de l'application PocketTopo peuvent \^etre import\'ees aussi bien dans un \'editeur de texte que dans un \'editeur de dessin 
+({\it Fichier $\to$ Importer $\to$ Exportation Therion PocketTopo} et {\it Images d'arri\`ere-plan $\to$ Ins\'erer $\to$ Exportation Therion PocketTopo}). 
+Le m\^eme fichier est utilis\'e pour les deux importations. L'importation d'une esquisse ne cr\'ee pas directement de donn\'ees de scraps. 
+Le dessin est simplement affich\'e sur le fond d'\'ecran comme des bitmaps num\'eris\'es et doit \^etre num\'eris\'e manuellement.
+
+
+\subsubchapter Raccourcis clavier et souris dans l'\'editeur de dessins.
+{\it G\'en\'eral :}
+\list
+ * Ctrl + Z = d\'efaire
+ * Ctrl + Y = refaire
+ * F9 = compiler le projet en cours
+ * Pour s\'electionner un objet dans la liste \`a l'aide du clavier : 
+       utilisez la touche `Tab' dans la liste souhait\'ee ; 
+       d\'eplacez le curseur soulign\'e sur l'objet souhait\'e ; 
+       appuyer sur la barre `espace'.
+ * PageUp/PageDown = faire d\'efiler vers le haut / bas dans le panneau lat\'eral.
+ * Shift + PageUp/PageDown = aire d\'efiler vers le haut / bas la fen\^etre de commande du fichier.
+\endlist
+
+{\it Zone de dessin et images de fond :}
+\list
+ * Clic droit = d\'efilement de zone de dessin 
+ * Double Clic droit sur une image = d\'eplacer l'image
+\endlist
+
+{\it Ins\'erer un scrap :}
+\list
+ * Ctrl+R = ins\'erer un scrap
+\endlist
+
+{\it Ins\'erer une ligne :}
+\list
+ * Crtl + L = ins\'erer une nouvelle ligne et entrer dans le mode `ins\'erer un point de ligne'
+ * Clic gauche = ins\'erer un point de ligne (sans points de contr™le)
+ * Ctrl + Clic gauche = ins\'erer un point de ligne tr\`es proche du point existant (normalement ins\'er\'e juste au-dessus du point existant le plus proche)
+ * Clic gauche + glisser = ins\'erer un point de ligne (avec des points de contr™le)
+ * Ctrl enfonc\'ee tout en faisant glisser  = fixer la distance du point de contr™le pr\'ec\'edent
+ * Clic gauche + glisser sur le point de contr™le = d\'eplacer sa position
+ * Clic droit sur un des points pr\'ec\'edents = s\'electionner le point pr\'ec\'edent en mode insertion 
+                                                                    (utile si vous souhaitez \'egalement modifier la direction du point de contr™le pr\'ec\'edent).
+ * Esc (Echap) ou Clic gauche sur le dernier point = terminer l'insertion de ligne
+ * Clic gauche sur le premier point de la ligne = fermer la ligne et ins\'erer la derni\`ere ligne
+\endlist
+
+{\it Edition d'une ligne :}
+\list
+ * Clic gauche + glisser = d\'eplacer un point de ligne
+ * Ctrl + Clic gauche sur le point de contr™le + glisser = d\'eplacer le point de la ligne pr\`es du point existant 
+                  (normalement, il est d\'eplac\'e juste au-dessus du point existant le plus proche)
+ * Clic gauche sur le point de contr™le + glisser = d\'eplace le point de contr™le
+\endlist
+
+{\it Ajouter un point de ligne :}
+\list
+  * s\'electionnez le point avant lequel vous souhaitez ins\'erer des points ; 
+     ins\'erer les points requis; appuyez sur Echap/Esc ou faites un Clic gauche sur le point que vous avez s\'electionn\'e au d\'ebut.
+\endlist
+  
+{\it Effacer un point de ligne :}
+\list
+  * s\'electionnez le point que vous souhaitez supprimer ; 
+    appuyez sur {\it Modifier ligne} $\to$ {\it Supprimer un point} dans le {\it panneau de configuration Ligne}.
+\endlist
+
+{\it S\'eparation/fractionnement d'une ligne (Splitting) :}
+\list
+ * s\'electionnez le point o\`u vous souhaitez fractionner la ligne ; 
+   appuyez sur {\it Modifier ligne} $\to$ {\it S\'eparer ligne} dans le {\it panneau de commande Ligne}.
+\endlist
+
+
+{\it Insertion d'un point :}
+\list
+ * Ctrl+P = permet de passer en mode `insertion de point'.
+ * Clic gauche = ins\'erer un point \`a une position donn\'ee.
+ * Ctrl + Clic gauche = ins\'erer un point tr\`es proche du point existant (normalement, il sera ins\'er\'e juste au-dessus du point le plus proche).
+ * Esc/Echap = sortir du mode `insertion de point'.
+\endlist
+
+{\it Edition d'un point :}
+\list
+ * LeftClick + glisser = d\'eplacer le point
+ * Ctrl + Clic gauche + glisser = d\'eplacer le point pr\`es du point existant 
+                    (normalement, il est d\'eplac\'e juste au-dessus du point existant le plus proche)
+ * Clic gauche + glisser les fl\`eches de point = modifier l'orientation ou la taille des points (en fonction des commutateurs donn\'es dans le panneau de configuration Point).
+\endlist
+
+{\it Insertion d'une aire :}
+\list
+ * Appuyez sur les touches Ctrl + A ou les {\it commandes de fichier} $\to$ {\it Ins\'erer} $\to$ {\it aire} pour passer au mode `Ins\'erer Aire'.
+ * Faites un clic droit sur les lignes qui entourent l'aire souhait\'ee
+ * Esc/Echap pour terminer l'insertion de lignes de bordure
+\endlist
+
+{\it Edition d'une aire :}
+\list
+ * s\'electionner l'aire que vous souhaitez modifier
+ * pressez `Ins\'erer' dans le `contr™le des aires' pour ins\'erer d'autres lignes \`a la position actuelle du curseur
+ * pressez `Insert ID' pour ins\'erer une bordure avec un ID donn\'e \`a la position actuelle du curseur
+ * appuyez sur `Supprimer' pour supprimer la limite s\'electionn\'ee
+\endlist
+
+
+{\it S\'election d'un objet existant :}
+\list
+ * Clic gauche = s\'election d'un objet en haut
+ * Clic droit = s\'electionnez un objet juste en dessous de l'objet sup\'erieur (utile lorsque plusieurs points se superposent)
+\endlist
+
+
+
+\subchapter Penser Therion.
+
+Bien que tout (ou presque tout) concernant les fichiers d'entr\'ee de Therion ait \'et\'e expliqu\'e, ce chapitre propose quelques astuces et conseils suppl\'ementaires.
+
+\subsubchapter Comment entrer une ligne de cheminement (centreline) ?.
+
+La commande de base permettant la d\'eclaration d'un bloc de lignes de cheminement est la commande |centreline|.
+Si la cavit\'e est plus grande que quelques m\`etres, il peut \^etre judicieux de diviser les donn\'ees en plusieurs fichiers distincts et de s\'eparer les donn\'ees 
+ centreline des donn\'ees de la topographie (map) 
+
+Nous utilisons classiquement un seul fichier |*.th| qui contient un bloc |centreline| par s\'eance topographique.
+Il est facile de d\'emarrer avec un fichier template comme celui montr\'e ci-dessous, 
+o\`u les points seront remplac\'es par le texte appropri\'e.
+
+|encoding ISO8859-1
+survey ... -title "..."
+  centreline
+    team "..."
+    team "..."
+    date ...
+    units clino compass grad
+    data normal from to compass clino length
+      ... ... ... ... ...
+  endcentreline
+endsurvey|
+
+Pour cr\'eer un espace de nom unique, la commande |centreline| est incluse dans la commande |survey| ... |endsurvey|. 
+C'est utile lorsque le relev\'e porte le m\^eme nom que le fichier qui le contient.\[E.g.~|survey entrance| dans le fichier |entrance.th|.] 
+Les points seront ensuite r\'ef\'erenc\'es avec le caract\`ere |@|---voir la description de la commande |survey|.
+
+Pour les tr\`es grandes cavit\'es, il est possible de construire une structure hi\'erarchique des r\'epertoires. 
+Dans un tel cas, nous cr\'eons un fichier sp\'ecial appel\'e |INDEX.th|, qui contient tous les autres fichiers |*.th| 
+d'un r\'epertoire donn\'e et contient aussi des commandes |equate| permettant de d\'efinir les connexions entre les topographies.
+
+
+\subsubchapter Comment dessiner des topographies ?.
+
+Le plus important est de concevoir la division de la cavit\'e en plusieurs scraps. 
+Le |Scrap| est la pierre angulaire de la topographie. C'est g\'en\'eralement une {\it mauvaise\/} id\'ee d'essayer d'ajuster chaque scrap au fichier |*.th| correspondant. 
+La raison en est que les connexions entre les scraps doivent \^etre aussi simples que possible. 
+En r\`egle g\'en\'erale, les scraps sont ind\'ependants de la hi\'erarchie de la ligne de cheminement. 
+Essayez donc d'oublier la hi\'erarchie des relev\'es lorsque vous tracez des topographies et choisissez les meilleures jonctions.
+
+Nous ins\'erons g\'en\'eralement des topographies dans l'avant-dernier niveau de la hi\'erarchie du relev\'e.\[N'oubliez pas que les relev\'es cr\'eent des espaces de noms. 
+Vous ne pouvez donc r\'ef\'erencer que les objets du relev\'e et de tous les sous-niveaux.]
+Chaque scrap peut contenir une partie arbitraire de n'importe quelle topographie du dernier niveau hi\'erarchique. 
+Par exemple, une topographie principale contient les topographies |a|, |b|, |c| et |d|. 
+Les relev\'es |a| -- |d| contiennent les donn\'ees de la ligne de cheminement de quatre secteurs du relev\'e 
+et chacun d'eux se trouve dans un fichier s\'epar\'e. Il existe une topographie |main_map| 
+qui contient les scraps |s1| et |s2|. 
+Si la topo principale (|main_map|) est situ\'ee dans le relev\'e principal (|main|), 
+le scrap |s1| peut couvrir une partie de la ligne de cheminement de la topographie |a|, 
+compl\'eter le relev\'e |b| et une partie de |c| ; |s2| couvrira une partie des topographies |a| et |c| 
+ainsi qu'une topographie compl\`ete |d|. 
+Les noms des stations du relev\'e seront r\'ef\'erenc\'es \`a l'aide du symbole |@| (par exemple |1@a|) dans les scraps.\[Si 
+vous incluez des topographies dans le relev\'e de niveau sup\'erieur, vous pouvez r\'ef\'erencer n'importe quelle station dans n'importe quelle feuille, 
+ce qui est tr\`es flexible. Mais en revanche, vous devrez utiliser des noms plus longs dans les r\'ef\'erences de stations, comme |3@dno.katakomby.jmn.dumbier|]
+
+Les scraps sont g\'en\'eralement stock\'es dans des fichiers |*.th2|. Chaque fichier peut contenir plusieurs scraps. 
+Pour garder les donn\'ees bien organis\'ees, il existe quelques conventions de d\'enomination : 
+dans le fichier |foo.th2|, tous les scraps sont nomm\'es |foo_si|, o\`u |i| est \'egal \`a |1|, |2|, etc. 
+Les sections transverses sont nomm\'ees |foo_ci|, les lignes |foo_li|, etc. 
+Cela aide beaucoup avec les grands syst\`emes karstiques : si un scrap est r\'ef\'erenc\'e, vous savez imm\'ediatement dans quel fichier il a \'et\'e d\'efini.
+
+Comme pour les fichiers |*.th|, il peut y avoir un fichier |INDEX.th2| par r\'epertoire qui inclut tous les fichiers |*.th2|, 
+d\'efinit les jointures de scraps et les topographiess finales.
+
+Lorsque vous tracez des scraps, v\'erifiez si le contour est correctement d\'efini : 
+toutes les lignes cr\'eant la bordure ext\'erieure doivent avoir l'option |-outline out| ;
+toutes les lignes entourant les piliers int\'erieurs l'option |-outline in|. 
+Les contours du scrap ne peuvent pas se croiser, sinon la face int\'erieure du scrap ne peut pas \^etre d\'etermin\'ee. 
+Il y a deux tests simples pour savoir si le contour du scrap est correct :
+\list
+* il n'ya aucun message d'avertissement (warning) \MP\  ``|scrap outline intersects itself|'' (le contour du scrap se croise)
+* lorsque vous d\'efinissez le remplissage des passages/galeries sur n'importe quelle couleur (option |color map-fg <nombre>| dans le |layout|), 
+vous pouvez voir ce que Therion consid\`ere comme se trouvant \`a l'int\'erieur du scrap.
+\endlist
+
+\subsubchapter Comment construire les mod\`eles ?.
+
+Un mod\`ele est cr\'e\'e \`a partir des contours des scraps. La hauteur et la profondeur des galeries sont calcul\'ees \`a partir des symboles de points |passage-height| et |dimensions| (dans les scraps).
+
+\subchapter Therion en profondeur.
+
+\subsubchapter Comment le dessin est-il construit ?.
+
+Ce chapitre explique comment les options |-clip|, |-place|, |-visibility| et |-context| des commandes |point|, |line| et |area| fonctionnent exactement. 
+Il explique \'egalement les options |color|, |transparency|, |symbol-hide| et |symbol-show| 
+(respectivement couleur, transparence, masque et affichage de symboles) de la commande de pr\'esentation |layout|.
+
+Lors de l'exportation de la topographie, Therion doit d\'eterminer trois attributs pour chaque symbole de point, de ligne ou de zone : visibilit\'e (visibility), coupure (clip) et ordre (place ; orderring).
+
+(1) Le symbole est visible si tout ce qui suit est vrai :
+
+\list
+* l'option |-visibility on| est activ\'ee (par d\'efaut pour tous les symboles)
+* il n'a pas \'et\'e masqu\'e par l'option |-symbol-hide| dans la pr\'esentation (|layout|), 
+* si son option |-context| est d\'efinie, le symbole correspondant n'a pas \'et\'e masqu\'e par l'option |-symbol-hide| de la pr\'esentation (|layout|).
+\endlist
+
+Seuls les symboles visibles sont export\'es.
+
+(2) Certains symboles sont coup\'es par le contour du scrap. Ce sont par d\'efaut tous les \'el\'ements suivants :
+\list
+* {\it symboles points :} symboles de remplissages de galeries/passages (substrat rocheux, guano, etc.),
+* {\it symboles lignes :} tous les symboles de ligne qui n'ont pas l'option |-outline| mentionn\'ee, \`a l'exception de |section|, |arrow|, |label|, |gradient| et 
+  |water-flow|
+* {\it symboles d'aires :} tous.
+\endlist
+
+Le param\`etre par d\'efaut peut \^etre modifi\'e \`a l'aide de l'option |-clip|, si cela est autoris\'e pour un symbole particulier. 
+Tous les autres symboles ne sont pas coup\'es par la limite du scrap.
+
+
+(3) Ordre : Chaque symbole appartient \`a l'un des groupes suivants, qui sont dessin\'es les uns apr\`es les autres :
+
+\list
+* bottom (bas) = tous les symboles avec l'option |-place bottom| 
+* default-bottom = tous les symboles area par d\'efaut
+* default = symboles qui n'appartiennent \`a aucun autre groupe
+* default-top = |ceiling-step| (marche de plafond) et |chimney| (chemin\'ee) par defaut
+* top = tous les symbols avec l'option |-place top|
+\endlist
+
+L'ordre des symboles \`a l'int\'erieur de chaque groupe suit l'ordre des commandes dans le fichier d'entr\'ee\[Ou menu {\it File commands} dans XTherion] : 
+les symboles qui viennent en premier sont dessin\'es en dernier (c'est-\`a-dire qu'ils sont affich\'es en haut de chaque groupe).
+
+Nous sommes maintenant pr\^ets \`a d\'ecrire comment les topographies (ou les chapitres de l'atlas) sont construites :
+
+\list\obeyspaces\obeylines
+*chaque aire de la topographe finale est remplie gr\^ace \`a color |color map-bg|
+*les surfaces bitmap sont affich\'ees si |surface| est configur\'ee avec |bottom|
+*FOR (pour) chaque scrap : le contour est rempli de blanc
+*la grille est affich\'ee si |grid| est configur\'ee avec |bottom|
+*preview below (aper\c{c}u ci-dessous)\[comme sp\'ecifi\'e en utilisant l'option |preview| dans la commande |map|.]%
+  est rempli gr\^ace \`a |color preview-below|
+*FOR (pour) chaque niveau\[Level est une collection de scraps non separ\'es par une commande |break|%
+ dans la commande |map|] :
+  BEGIN (d\'ebut) de la transparence
+    FOR (pour) chaque scrap : le contour est rempli gr\^ace \`a  |color map-fg|
+    FOR (pour) chaque scrap : les symboles d'aires sont remplis et soud\'es (clip) \`a la limite du scrap
+  END (fin) de la transparence
+  BEGIN (d\'ebut) de la soudure des \'etiquettes de texte (pour toutes les \'etiquettes dans ce niveau et les niveaux sup\'erieurs)
+    FOR chaque scrap : 
+      dessiner tous les symboles \`a d\'ecouper (\`a l'exception de |line survey|) 
+        mettre en ordre de bas en haut
+      tracer les symboles de |line survey| qui sont coup\'es en bordure de scrap
+      d\'ecouper \`a la bordure du scrap
+    FOR chaque scrap:
+      dessiner tous les symboles \`a ne pas couper (\`a l'exception des points de stations |point station| et de toutes les \'etiquettes)
+         mettre en ordre de bas en haut
+      dessiner les symboles |point station|
+  END (fin) du d\'ecoupage par les \'etiquettes de texte
+  FOR (pour) chaque scrap : dessiner toutes les \'etiquettes (point et ligne) (y compris |wall-altitude|)
+*l'aper\c{c}u ci-dessus est dessin\'e avec |color preview-above|
+*les bitmaps de surface sont affich\'es si |surface| est positionn\'e sur |top|
+*la grille est affich\'ee si |grid| est positionn\'e sur |top|
+\endlist
+
+
+
+
+\endinput

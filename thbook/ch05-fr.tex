@@ -1,0 +1,529 @@
+\eject
+\vbox{\pic[93.2mm]{thom.jpg}}
+\vskip-3cm %-2.35cm
+{\tenitbx\baselineskip15pt\leftskip2mm\rightskip6.8cm\parindent4.6cm
+Jesus a dit, `Laisse celui qui chercher continuer \`a chercher jusqu'\`a ce qu'il trouve.
+Quand il aura trouv\'e, il deviendra troubl\'e. 
+Quand il sera devenue troubl\'e, il sera \'etonn\'e, et il prendra tout en main.'
+\hfill\eightrm -- Gospel attribu\'e \`a Thomas, {\eightmit 2}$^{e}$ s.\par%i\`ecle\par
+}
+
+\chapter Modifier le layout, Mise en page des dessins en PDF.
+
+Ce chapitre est extr\`emement utile si vous n'\^ets pas satisfait de la mise en page (layout) fournie pour les symboles et les topographies,
+et que vous d\'esirez les adapter \`a vos besoins.
+Cependant, vous devrez \^etre capables de comprendre et d'\'ecrire des macros \TeX\ et \MP\ pour arriver \`a vos fins.
+
+
+\subchapter Mise en page dans le mode altas.
+
+La commande |layout| permet une mise en page basique dans le mode atlas. 
+Ceci est effectu\'e \`a travers des options comme |page-setup| ou |overlap|. 
+Mais il n'y a pas d'option qui vont sp\'ecifier la position de la topographie (map), de la fen\^etre de navigation 
+et des autres \'el\'ements dans l'espace d\'efini par les dimensions |page-width| et |page-height| ; 
+par exemple, pourquoi la fen\^etre de navigation est sous la planche topographique, et non \`a sa droite o\`u \`a sa gauche ?
+
+Il existe diff\'erentes possibilit\'es de mise en page d'une page. 
+Plut™t que d'offrir encore plus d'options, pour la commande |layout|, Therion utilise le langage \TeX 
+pour d\'ecrire la mise en page de l'atlas.
+%(Voir la section `layout' where to put \TeX\ commands.) 
+Cette approche poss\`ede l'avantage que l'utilisateur a un acc\`es direct \`a une mise en page avanc\'ee sans rendre le langage de Therion trop complexe.
+
+Therion utilise pdf\TeX\ avec le format {\it plain} de mise en page. En cons\'equences, vous devriez \^etre habitu\'e au langage \TeX\ 
+si vous d\'efinir nouveau Layouts.
+
+La r\'ef\'erence ultime pour le langage \TeX\ est :
+\list
+  Knuth, D. E.: {\it The \TeX book}, 
+                Reading, Massachusetts, Addison-Wesley $^1$1984 %[...]
+\endlist
+
+Pour les extensions pdf\TeX, il existe un manuel court :
+\list
+  Th\`anh, H. T.---Rahtz, S.---Hagen, H.: {\it The pdf\TeX\ user manual}, 
+                disponible sur  \hfil\break 
+		\www{http://www.pdftex.org}
+\endlist
+
+Les macros \TeX\ sont utilis\'ees \`a l'int\'erieur d'un bloc |code tex-atlas| dans la commande |layout| 
+(Voir le chapitre {\it Traitement des donn\'ees} pour plus de d\'etails). 
+La macro basique pr\'ed\'efinie par THerion est :
+
+|\dopage|
+
+L'id\'ee est simple : pour chaque page, Therion d\'efinit des variables \TeX\ 
+(count, token, et box registers) qui contiennent les \'el\'ements de la page (map (topographie), 
+navigator (fen\^etre de navigation), page name (nom de la page) etc.). 
+A la fin de chaque page, la macro |\dopage| est invoqu\'ee. 
+Cela d\'efini la position de chaque \'el\'ement sur la page. Red\'efinir cette macro va vous permettre d'obtenir la mise en page d\'esir\'ee.
+Sans cette red\'efinition, vous n'aurez que la mise en page standard.
+
+Voila la liste des variables d\'efinies pour chaque page :
+
+\list
+  {\it Boxes:}
+
+  * |\mapbox| = Boite contenant la topographie. Sa largeur (hauteur) est d\'efinie en fonction des options |size| et |overlap| de la commande |layout| : 
+
+    |size_width + 2*overlap| ou
+    
+    |size_height + 2*overlap|, respectivement
+
+  * |\navbox| = Boite contenant la fen\^etre de navigation, avec les dimensions :
+
+    |size_width * (2*nav_size_x+1) / nav_factor| ou
+
+    |size_height * (2*nav_size_y+1) / nav_factor|, respectivement
+
+    Les deux boites |\mapbox| et |\navbox| contiennent des liens hypertextes.
+
+  {\it Count registers:}
+
+  * |\pointerE|, |\pointerW|, |\pointerN|, |\pointerS| contiennent les num\'eros de pages des pages voisines respectivement dans les directions E, W, N et S. 
+     Si une telle page n'existe pas, son num\'ero est 0.
+
+  * |\pagenum| num\'ero de page courant
+
+  {\it Token registers:}
+
+  * |\pointerU|, |\pointerD| contiennent respectivement l'information sur les pages au des-sus et en dessous de la page courante.
+    Elle consiste en un ou plusieurs enregistrements concat\'en\'e. 
+    Chaque enregistrement poss\`ede un format sp\'ecial :
+    
+    {\tt|page-name|\char124|page-number|\char124|destination|\char124\char124}
+    
+    S'il n'existe pas de telles pages, la valeur est |notdef|.
+
+    Voir la description de la macro |\processpointeritem| ci-dessous pour savoir comment extraire et utiliser cette information.
+
+  * |\pagename| = nom de la topographie courante en fonction des options de la commande |map|.
+
+  * |\pagelabel| = l'\'etiquette de page comme sp\'ecifi\'ee par les options |origin| et |origin-label| de la commande |layout|.
+\endlist
+
+
+Les variables suivantes sont d\'efinies au d\'ebut du document :
+
+\list
+  * |\hsize|, |\vsize| = dimensions des pages \TeX\, d\'efinies en fonction des param\`etres  |page-width|
+    et |page-height| de l'option |page-setup| de la commande |layout|. 
+    Elles d\'eterminent l'aire utile lorsque la mise en page est effectu\'ee via la macro |\dopage|.
+
+  * |\ifpagenumbering| = Ce boolean (conditionnel) est vrai ou faux en fonction de l'option |page-numbers| de la commande |layout|.
+\endlist
+
+Il y a aussi des macros pr\'ed\'efinies qui aident au traitement des variables |\pointer*| :
+
+\list
+  * |\showpointer| avec un des arguments |\pointerE|, |\pointerW|, |\pointerN| ou
+    |\pointerS| affiche la valeur de l'argument. Si cette valeur est 0, il n'affiche rien.
+    C'est en effet utile parce que la valeur z\'ero (pas de page voisine) ne doit pas \^etre affich\'ee.
+    
+  * |\showpointerlist| avec l'un des arguments |\pointerU| ou |\pointerD| pr\'esente le contenu de cet argument. 
+    (qui contient |\pointerU| ou |\pointerD|, voir au dessus.) Pour chaque enregistrement, il appelle la macro
+    |\processpointeritem|, qui est responsable du formatage des donn\'ees. 
+    
+    La macro |\showpointerlist| doit \^etre utilis\'ee sans la red\'efinir \`a la place o\`u vous voulez afficher le contenu de son argument ;
+    pour un formatage de donn\'ees personnalis\'e, il faut red\'efinir la macro |\processpointeritem|.
+         
+  * |\processpointeritem| poss\`ede trois arguements (page-name, page-number, 
+    destination) et permet de visualiser ces donn\'ees. Les arguments sont d\'elimit\'es comme ci-dessous :
+    
+    {\tt|\def\processpointeritem#1|\char124|#2|\char124|#3\endarg{...}|}
+
+    Un exemple de d\'efinition pourrait \^etre :
+
+    {\tt|\def\processpointeritem#1|\char124|#2|\char124}|#3\endarg{%
+  \hbox{\pdfstartlink attr {/Border [0 0 0]}% 
+        goto name {#3} #2 (#1)\pdfendlink}%
+}|
+
+   (notez comment utiliser l'argument {\it destination}), 
+   ou plus simplement (si nous ne voulons pas de liens hypertextes):
+
+    {\tt|\def\processpointeritem#1|\char124|#2|\char124}|#3\endarg{%
+  \hbox{#2 (#1)}%
+}|
+\endlist
+
+Pour g\'erer les polices, il existe ces macros :
+
+\list
+* |\size[#1]| pour changer la taille de la police,
+
+* |\color[#1 #2 #3]| pour changer la couleur (valeurs RGB dans l'intervalle 0--100), et
+
+* |\rm|, |\it|, |\bf|, |\ss|, |\si| pour changer le type de caract\`eres (normal, italique, gras,...).
+\endlist
+
+%If you use own texts in \TeX\ macros (like a label for the scale bar), these 
+%font switches work only in restricted manner: it's supposed that all characters 
+%are present in the first encoding specified in the initialization file. 
+
+Voir en dessous pour une liste de textes pr\'ed\'efinis qui peuvent \^etre utilis\'es avec l'atlas.
+
+Il y a aussi un macro |\framed| qui prend une boite comme argument et qui affiche le contour de la boite
+Le style du contour peut \^etre personnalis\'e en red\'efinissant la macro |\linestyle| 
+qui vaut par d\'efaut |1 J 1 j 1.5 w|.
+
+Maintenant, nous sommes pr\^ets pour re d\'efinir la macro |\dopage|.
+Vous devez choisir quel(s) \'el\'ement(s) pr\'ed\'efini(s) utiliser. Un exemple tr\`es simple pourrait \^etre :
+
+|layout my_layout
+  scale 1 200
+  page-setup 29.7 21 27.7 19 1 1 cm
+  size 26.7 18 cm
+  overlap 0.5 cm
+  code tex-atlas
+    \def\dopage{\box\mapbox}
+    \insertmaps 
+endlayout|
+
+qui d\'efini une mise en page sur une feuille A4 en mode paysage sans fen\^etre de navigation ni texte. Il n'y a que la topographie sur la page.
+
+Notez la macro |\insertmaps|. Le pages de topographies sont ins\'er\'ees \`a leur posision.
+Ce n'et pas fiat automatiquement parce que vous pouvez choisir d'ins\'erer d'autres pages avant la premi\`ere page de topographie. 
+
+La d\'efinition par d\'efaut de la macro |\dopage| est plus avanc\'ee :
+
+|\def\dopage{%
+ \vbox{\centerline{\framed{\mapbox}}
+  \bigskip
+  \line{%
+    \vbox to \ht\navbox{
+      \hbox{\size[20]\the\pagelabel
+        \ifpagenumbering\space(\the\pagenum)\fi
+        \space\size[16]\the\pagename}
+      \ifpagenumbering
+        \medskip
+        \hbox{\qquad\qquad
+          \vtop{%
+            \hbox to 0pt{\hss\showpointer\pointerN\hss}
+            \hbox to 0pt{\llap{\showpointer\pointerW\hskip0.7em}%
+              \raise1pt\hbox to 0pt{\hss$\updownarrow$\hss}%
+              \raise1pt\hbox to 0pt{\hss$\leftrightarrow$\hss}%
+              \rlap{\hskip0.7em\showpointer\pointerE}}
+              \hbox to 0pt{\hss\showpointer\pointerS\hss}
+          }\qquad\qquad
+          \vtop{
+            \def\arr{$\uparrow$}
+            \showpointerlist\pointerU
+            \def\arr{$\downarrow$}
+            \showpointerlist\pointerD
+          }
+        }
+      \fi
+      \vss
+      \scalebar
+    }\hss
+    \box\navbox
+  }
+ }
+}|
+
+Il est possible d'utiliser d'autres macros en langage \TeX\ ou des primitives \TeX\ pour ajouter de nouvelles caract\'eristiques, 
+par exemple une mise en page diff\'erente entre les pages paires et impaires ; les cartouches de haut de page et de bas de page ;
+ou ajouter un logo \`a chaque page. 
+
+En plus des topographies, les pages de l'atlas peuvent contenir des objets additionnels comme :
+le titre de la page, des informations de base sur la cavit\'e, la l\'egende avec les symboles utilis\'es etc.
+
+Therion g\'en\`ere automatiquement une liste des symboles utilis\'es ainsi qu'une liste des personnes qui ont explor\'e, topographi\'e et dessin\'e 
+certaines parties de la cavit\'e.
+Les token registers suivant peuvent \^etre utilis\'es (en accord avec les demandes de l'utilisateur 
+avant ou apr\`es la macro |\insertmaps|):
+
+\list
+* |\explotitle|, |\topotitle|, |\cartotitle| = titres traduits
+* |\exploteam|, |\topoteam|, |\cartoteam| = membres qui ont particip\'e (en r\'ef\'erence au options |team|, |explo-team| de la |centreline| et de l'option |author| des scraps)
+* |\explodate|, |\topodate|, |\cartodate| = dates correspondantes
+* |\comment| = d\'efini par l'option |map-comment| de la commande |layout|
+* |\copyrights| = d\'efini par l'option |copyright| des |surveys|, |scrap| et autres objets
+* |\cavename| = nom de la topographie export\'ee ; d\'efini \`a partir de l'option |-title| de la topographie (map) export\'ee
+* |\cavelength|, |\cavedepth| = longueur et profondeur approximative de la topographie affich\'ee
+* |\cavelengthtitle|, |\cavedepthtitle| = \'etiquettes traduites
+* \NEW{5.4}|\cavemaxz|, |\caveminz| = valeurs max/min de l'altitude
+* \NEW{5.4}|\thversion| = version actuelle de Therion
+* \NEW{5.4}|\currentdate| = date actuelle
+* \NEW{5.4}|\outcscode|, |\outcsname| = code et nom du syst\`eme de coordonn\'ees d'exportation
+* \NEW{5.4}|\northdir| = nord `true' ou `grid'
+* \NEW{5.4}|\magdecl| = d\'eclinaison magn\'etique en degr\'es
+* \NEW{5.4}|\gridconv| = convergence des m\'eridiens de la grille en degr\'es
+\endlist
+
+Il y a aussi une macro |\atlastitlepages| qui combine la plupart des token registers d\'ecrits ci-dessous
+pour obtenir une page d'introduction format\'ee simplement.
+
+Pour afficher la l\'egende, l y a :
+
+\list
+* |\iflegend| = bool\'een/conditionnel ; `vrai' (true) si l'option |legend| de la commande |layout| est sur |on| ou |all|
+* |\legendtitle| = token register contenant le titre traduit
+* |\insertlegend| = macro pour ins\'erer l'image des symboles de l\'egende avec la description traduite
+                            dans le nombre de colonnes sp\'ecifi\'e par l'option |legend-columns| de la commande |layout|)
+* |\formattedlegend| = combine les trois commandes ci-dessus pour obtenir une l\'egende pr\'eformat\'ee avec un cartouche 
+                                    et une composition des symboles en deux colonnes\[Par D\'efaut ; 
+                                    ajuster le nombre de colonnes de la l\'egende avec l'option |legend-columns| de la commande |layout|]
+                                    si l'option |legend| est sur |on|.
+\endlist
+
+La fl\`eche du Nord et la barre d'\'echelle peuvent \^etre affich\'ees en utilisant :
+
+\list
+* |\ifnortharrow| = bool\'een/conditionnel ; `vrai' (true) si la projection de la topographie (map) est `plan' 
+                             est que le symbole de la fl\`eche du nord n'est pas cach\'e dans le |layout|
+* |\ifscalebar| = bool\'een/conditionnel ; `vrai' (true) si la barre d'\'echelle n'est pas cach\'ee dans le |layout|
+* |\northarrow| = forme PDF de la fl\`eche du nord
+* |\scalebar| = forme PDF de la barre d'\'echelle
+\endlist
+
+Il ya une macro \`a usage g\'en\'eral pour la composition en colonnes mutltiples\[Ne pas utiliser avec
+la l\'egende de la topographie, o\`u le nombre de colonnes est ajust\'e par l'option
+|legend-columns| de la commande |layout|.] :
+\list
+* |\begmulti <i>|, |\endmulti| = texte entre ces macros format\'e en |<i>| colonnes
+\endlist
+
+Voici un exemple sur comment cr\'eer un atlas avec la liste des topographes etc.\ suivi par les pages de topographies puis avec la l\'egende \`a la fin :
+
+|code tex-atlas
+  \atlastitlepages
+  \insertmaps
+  \formattedlegend|
+
+\subchapter Mise en page dans le mode map (topographie).
+
+Dans le mode map (topographie), il est possible d'utiliser des variables pr\'ed\'efinies qui sont d\'ecrites dans le chapitre pr\'ec\'edent : 
+
+{\rightskip0cm plus 5cm
+|\cavename|, |\comment|, |\copyrights|, 
+|\explotitle|, |\topotitle|, |\cartotitle|, 
+|\exploteam|, |\topoteam|, |\cartoteam|, 
+|\explodate|, |\topodate|, |\cartodate|, 
+|\cavelength|, |\cavedepth|, |\cavelengthtitle|, |\cavedepthtitle|,
+|\cavemaxz|, |\caveminz|, |\thversion|, |\currentdate|,
+|\outcscode|, |\outcsname|, |\northdir|, |\magdecl|, |\gridconv|,
+|\ifnortharrow|, |\ifscalebar|, |\northarrow|, |\scalebar|, 
+|\iflegend|, |\legendtitle|, |\insertlegend|, |\begmulti <i>|, |\endmulti|, 
+|\formattedlegend|, |\legendcolumns|.
+\par}
+
+Pour les placer quelque part sur la topographie, vous devez d\'efinir une macro |\maplayout| dans le bloc de code |code tex-map| de la comande |layout|. 
+Il doit contenir un ou plusieurs invocations |\legendbox|.
+La macro |\legendbox| poss\`ede quatre param\`etres :
+les coordonn\'ees dans l'intervalle 0--100, la sp\'ecification de l'alignement
+(N, E, S, W, NE, SE, SW, NW ou C) et le contenu \`a afficher.
+
+Voici un exemple simple :
+
+|\def\maplayout{
+  \legendbox{0}{100}{NW}{\northarrow}
+}|
+
+qui affiche la fl\`eche du nord dans le coin sup\'erieur-gauche de la topographie
+
+Pour faciliter l'utilisation pour l'utilisateur, il y a un token register |\legendcontent|. 
+Il contient un pr\'eformatage du nom de la cavit\'e, de la fl\`eche du nord, de la barre d'\'echelle, des \'equipes d'exploration/topographie/dessins,
+du commentaire, des copyrights et de la l\'egende.
+(La macro |\legendcontent| est aussi utilis\'ee dans la d\'efinition de la mise en page par d\'efaut de la topographie :
+|\def\maplayout{\legendbox{0}{100}{NW} {\the\legendcontent}}|).
+
+La largeur du texte ci-dessus peut \^etre ajust\'e avec l'option |\legendwidth|
+(sa valeur par d\'efaut est d\'efinie par l'option |legend-width| de la commande |layout|). 
+La couleur et la taille du texte de la l\'egende pr\'eformat\'ee peut \^etre facilement modifi\'ees en utilisant les token registers 
+|\legendtextcolor|, |\legendtextsize|, |\legendtextsectionsize| et
+|\legendtextheadersize|, 
+par exemple pour un texte grand et bleu :
+
+|code tex-map
+  \legendwidth=20cm
+  \legendtextcolor={\color[0 0 100]}
+  \legendtextsize={\size[20]}
+  \legendtextheadersize={\size[60]}|
+
+
+Il est possible d'afficher le contour de toute la topographie en renseignant le dimen register |\framethickness| 
+avec une valeur positive, comme par exemple. |0.5mm|.
+
+
+\subchapter Personnalisation des \'etiquettes de texte.
+
+A partir de la version Therion 5.4.1 vous pouvez utiliser l'option |fonts-setup| de la commande |layout| \`a la place de la macro \MP\ |fonts_setup()|.
+
+\subchapter Nouveau symboles topographiques.
+
+La commande |layout| de Therion facilite la modification des banques de symboles pr\'ed\'efi-nies. 
+Si le symbole que vous chercher ou si la banque de symbole que vous voulez n'existe pas, il est possible de les cr\'eer. 
+
+Mais pour cela, vous devrez poss\'eder une connaissance du langage \MP, qui est utilis\'e la visualisation des topographies. 
+Il est d\'ecrit dans :
+
+\list
+  Hobby, J. D.: {\it A User's Manual for MetaPost}, disponible \`a \hfil\break
+     \www{http://cm.bell-labs.com/cm/cs/cstr/162.ps.gz}
+\endlist
+
+L'utilisateur peut aussi tirer b\'en\'efice de la r\'ef\'erence sur le langage {\manfnt METAFONT}, qui est assez similaire \`a \MP :
+
+\list
+  Knuth, D. E.: {\it The METAFONTbook}, Reading, Massachusetts, Addison-Wesley
+    $^1$1986
+\endlist
+
+Les nouveaux symboles peuvent \^etre d\'efinis dans un bloc |code metapost| de la commande |layout| 
+Il devient alors facile de rajouter des nouveaux symboles pour une compilation sp\'ecifique.
+Il est aussi possible de les rajouter de fa\c{c}on permanente en les compilant dans l'ex\'ecutable Therion
+(voir les {\it Annexes} pour les instructions de compilation).
+
+Chaque symbole poss\`ede un nom unique, qui consiste en les termes suivants :
+
+\list 
+* une des lettres `p', `l', `a', `s' pour les symboles point, ligne, aire ou sp\'ecial, respectivement ;
+* un caract\`ere underscore (soulign\'e ; `|_|' ;
+* un type de symbole comme list\'e dans le chapitre {\it Format des donn\'ees\/} avec tous les tirets supprim\'es ;
+* si le symbole poss\`ede un sous-type, ajouter un caract\`ere underscore (`|_|') et le sous-type ;
+* un caract\`ere underscore (`|_|') ;
+* un identifiant de symbole en casse majuscules.
+\endlist
+
+Par exemple : le nom standard du symbole de point `water-flow'avec un sous-type `permanent' 
+dans le `MY' est d\'efini ainsi : |p_waterflow_permanent_MY|. Le nom standard pour les d\'efinitions de l'utilisateur
+des types de symboles ne doit pas inclure d'identifiant de type de symbole, par exemple ~|p_u_bat|.
+
+Chaque nouveau symbole doit \^etre enregistr\'e dans une macro appel :
+
+|initsymbol("<nom_standard>");|
+
+sauf si c'est compil\'e dans l'ex\'ecutable Therion. 
+
+Il existe quatre pens (stylo) pr\'ed\'efinis : {\it PenA} (le plus \'epais) \dots\ {\it PenD} 
+(le plus fin), qui peuvent \^etre utilis\'es pour tous les dessins. 
+Pour dessiner et remplir, utiliser les commandes |thdraw| et |thfill| \`a la place des commandes \MP |draw| et |fill|.
+
+\NEW{5.4}Les variables suivantes sont aussi disponibles :
+
+\list
+* bool\'een |ATTR__shotflag_splay|, |ATTR__shotflag_duplicate|,\hfil\break
+  |ATTR__shotflag_approx| = pour la ligne survey
+* bool\'een |ATTR__stationflag_splay| = est true (vrai) pour les stations finales des vis\'ees d'habillage (splay shots)
+* bool\'een |ATTR__scrap_centerline| = est true(vrai) pour les scraps cr\'e\'es \`a partir de la centreline
+* bool\'een |ATTR__elevation| = true(vrai) pour les coupes projet\'ees ou \'etendues (extended), false (faux) pour la projection en plant
+* numeric |ATTR__height| = hauteur d'un puit ou d'un wall:pit
+* string |ATTR__id| = ID de l'objet actuel
+* string |ATTR__survey| = contient le nom de la topographie actuelle
+* string |ATTR__scrap| = contient le nom du scrap actuel
+* picture |ATTR__text| = contient le texte, par exemple pour le point continuation
+* string |NorthDir| = `true' ou `grid'
+* numeric |MagDecl| = d\'eclinaison magn\'etique en degr\'es
+* numeric |GridConv| = convergences des m\'eridiens de la grille en degr\'es
+\endlist
+
+\subsubchapter Symboles de points.
+
+Les symboles de points sont d\'efinis comme des macro en utilisant les commandes |def ... enddef;|.
+La majorit\'e des d\'efinitions de symboles de points poss\`ede quatre arguments :
+la position (paire), la rotation (numeric), d'\'echelle (scale ; numeric) et l'alignement (alignment ; paire). 
+les exceptions sont pour le point {\it section} qui n'a pas de repr\'esentation visuelle, tous les points 
+{\it labels}, qui ne demandent pas de traitement sp\'ecial comme d\'ecrit dans le chapitre pr\'ec\'edent, 
+et le point {\it station} qui ne prend qu'un seul argument : la position (pair).
+
+Tous les symboles sont dessin\'es en coordonn\'ees locales avec une unit\'e de longueur {\it u}. 
+Les intervalles de longueur recommand\'es sont $\left<-0.5u,0.5u\right>$ pour les deux axes. 
+Le symbole doit \^etre centr\'e sur l'origine des coordonn\'ees.
+Pour la topographie finale, tous les dessins sont transform\'es dans la variable de transformation sp\'ec\'efique {\it T\/}, 
+il est donc n\'ec\'essaire de d\'efinir cette variable avec de dessiner. 
+
+Ceci est habituellement fait en deux \'etapes (en faisant l'hypoth\`ese que les quatre arguments sont {\it P}, {\it R}, {\it S} et {\it A}) : 
+  
+\list
+* d\'efinir la variable paire {\it U} du symbole avec $\left({width\over2},{height\over2}\right)$ 
+  pour un alignement correcte. L'argument d'alignement {\it A} est une paire repr\'esentant les rapports
+  $\left(shift_x\over U_x\right)$ et $\left(shift_y\over U_y\right)$. 
+  
+  (Ainsi, |aligned A| signifie |shifted (xpart A * xpart U, ypart A * ypart U)|.)
+* d\'efini la variable de transformation {\it T} : 
+
+  {\catcode`\=12|T:=identity aligned A rotated R scaled S shifted P;|}
+\endlist
+
+Pour dessiner et remplir, utiliser les commandes |thdraw| et |thfill| \`a la place des commandes \MP |draw| et |fill|.
+Elles prennent automatiquement en compte la transformation {\it T}.
+
+Un exemple de d\'efinition peut \^etre :
+
+|def p_entrance_UIS (expr P,R,S,A)=
+  U:=(.2u,.5u);
+  T:=identity aligned A rotated R scaled S shifted P;
+  thfill (-.2u,-.5u)--(0,.5u)--(.2u,-.5u)--cycle;
+enddef;
+initsymbol("p_entrance_UIS");|
+
+\subsubchapter Symboles de lignes.
+
+Les symboles de lignes diff\`erent des symboles de points parce qu'ils ne sont pas dans un syst\`eme de coordonn\'ees local. 
+Chaque ligne poss\`ede un chemin ({\it path}) en coordonn\'ees absolues comme premier argument. 
+Il est donc n\'ecessaire de d\'eclarer la variable {\it T} comme |identity| avant tout dessins.
+
+Les symboles suivant prennent des arguments optionnels : 
+\list
+* arrow (fl\`eche) = numeric : 0 signifie par de fl\`eche, 1 signifie une fl\`eche \`a la fin, 2 au d\'ebut, et 3 aux deux extr\'emit\'es
+* contour = texte : liste de points qui auront une coche (tick) ou l'un des arguments
+  $-1$, $-2$ or $-3$ pour indiquer un tick ind\'efini, au milieu ou pas de tick, respectivement 
+* section = texte : liste de points qui poss\`edent une fl\`eche d'orientation ou $-1$ pour indiquer l'absence d'une telle fl\`eche
+* slope = numeric : 0 pas de bord, 1 un bord ; texte : liste de triplets (point, direction, length [longueur]) 
+\endlist
+
+Voici un exemple d'utilisation :
+
+|def l_wall_bedrock_UIS (expr P) = 
+  T:=identity;
+  pickup PenA;
+  thdraw P;
+enddef;
+initsymbol("l_wall_bedrock_UIS");|
+
+\subsubchapter Symboles d'aires.
+
+Les symboles d'aires sont similaires aux symboles de lignes : ils ne prennent qu'un seul argument -- {\it path} en coordonn\'ees absolues. 
+
+Vous pourrez les remplir de trois mani\`eres :
+
+\list
+ * remplir une grille al\'eatoire ou uniforme dans une mage temporaire (poss\'edant les dimensions |bbox path|) 
+    avec des symboles de points ; les bord sont coup\'es en fonction du |path| et ajouter \`a |currentpicture|
+ * remplir le |path| avec une couleur unie
+ * remplir le |path| avec un motif pr\'ed\'efini en utilisant le mot-clef |withpattern|.
+\endlist
+
+Les motifs sont d\'efinis en utilisant la m\^eme interface utilisateur (sans la macro
+|patterncolor|) comme d\'ecrit dans l'article
+
+\list
+  Bolek, P.: ``\MP\ and patterns,'' {\it TUGboat}, 3, XIX (1998), pp.~276--283,
+  disponi-ble en ligne \`a
+  \www{https://www.tug.org/TUGboat/Articles/tb19-3/tb60bolek.pdf}
+\endlist
+
+Vous devrez utiliser la macro \MP\ standard |draw| et des macros similaire sans d\'efinir la variable {\it T} dans la definition des motifs.
+
+Voici un exemple sur comment d\'efinir et utiliser les motifs :
+
+|beginpattern(pattern_water_UIS);
+  draw origin--10up withpen pensquare scaled (0.02u);
+  patternxstep(.18u);
+  patterntransform(identity rotated 45);
+endpattern;
+
+def a_water_UIS (expr p) =
+  T:=identity;
+  thclean p;
+  thfill p withpattern pattern_water_UIS;
+enddef;
+initsymbol("a_water_UIS");|
+
+\subsubchapter Symboles sp\'eciaux.
+
+Actuellement, il n'y a que deux symboles sp\'eciaux : la barre d\'echelle et la fl\`eche du nord. 
+Ils sont tous les deux exp\'erimentaux et sujets \`a de modifications dans le futur.
+
+\endinput
