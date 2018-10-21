@@ -52,19 +52,19 @@ STRIPFLAG = -s
 ##LXPLATFORM = LINUX
 
 # PLATFORM DEBIAN
-CXX = c++
-CC = gcc
-POBJECTS = lxR2P.o
-ifeq ($(VTKV6),1)
-VTKLIBS = -lvtkCommonExecutionModel-$(VTKVERSION) -lvtkCommonDataModel-$(VTKVERSION) -lvtkCommonCore-$(VTKVERSION) -lvtkFiltersCore-$(VTKVERSION) -lvtkFiltersHybrid-$(VTKVERSION) -lvtkIOLegacy-$(VTKVERSION) -lfreetype -lpng -ljpeg
-else
-VTKLIBS = -lvtkHybrid -lvtkImaging -lvtkIO -lvtkGraphics -lvtkFiltering -lvtkCommon -lfreetype
-endif
-CXXPFLAGS = -DLXLINUX -std=c++11 $(shell wx-config --cxxflags) -Wno-deprecated $(shell pkg-config freetype2 --cflags) -I$(VTKPATH)
-CCPFLAGS = -DLXLINUX  $(shell wx-config --cflags)
-LXLIBDIR = linux
-PLIBS = $(shell wx-config --libs --gl-libs) -L$(VTKLIBPATH) $(VTKLIBS) -lGLU -lGL -lpthread -lX11 -lz
-LXPLATFORM = LINUX
+##CXX = c++
+##CC = gcc
+##POBJECTS = lxR2P.o
+##ifeq ($(VTKV6),1)
+##VTKLIBS = -lvtkCommonExecutionModel-$(VTKVERSION) -lvtkCommonDataModel-$(VTKVERSION) -lvtkCommonCore-$(VTKVERSION) -lvtkFiltersCore-$(VTKVERSION) -lvtkFiltersHybrid-$(VTKVERSION) -lvtkIOLegacy-$(VTKVERSION) -lfreetype -lpng -ljpeg
+##else
+##VTKLIBS = -lvtkHybrid -lvtkImaging -lvtkIO -lvtkGraphics -lvtkFiltering -lvtkCommon -lfreetype
+##endif
+##CXXPFLAGS = -DLXLINUX -std=c++11 $(shell wx-config --cxxflags) -Wno-deprecated $(shell pkg-config freetype2 --cflags) -I$(VTKPATH)
+##CCPFLAGS = -DLXLINUX  $(shell wx-config --cflags)
+##LXLIBDIR = linux
+##PLIBS = $(shell wx-config --libs --gl-libs) -L$(VTKLIBPATH) $(VTKLIBS) -lGLU -lGL -lpthread -lX11 -lz
+##LXPLATFORM = LINUX
 
 # PLATFORM WIN32
 ##CXX = c++
@@ -94,16 +94,16 @@ LXPLATFORM = LINUX
 ##STRIPFLAG = -static-libgcc -static -s
 
 # PLATFORM MACOSX
-##CXX = c++
-##CC = cc
-##POBJECTS =
-##CXXPFLAGS = -W -Wall -std=c++11 -DLXMACOSX $(shell wx-config --cxxflags) $(shell pkg-config freetype2 --cflags) -I$(VTKPATH) -Wno-deprecated -I/usr/X11R6/include -I/usr/X11R6/include/freetype2
-##CCPFLAGS = -W -Wall -DLXMACOSX $(shell wx-config --cflags) -I/usr/X11R6/include
-##LXLIBDIR =
-##PLIBS = -lz -L/usr/X11R6/lib $(shell wx-config --libs --gl-libs) -L$(VTKLIBPATH) $(VTKLIBS)
-##LOCHAPPBINDIR := $(shell mkdir -p ./loch.app/Contents/MacOS)
-##POSTMAKE = cp -f ./loch ./loch.app/Contents/MacOS/loch
-##STRIPFLAG =
+CXX = c++
+CC = cc
+POBJECTS =
+CXXPFLAGS = -W -Wall -std=c++11 -DLXMACOSX $(shell wx-config --cxxflags) $(shell pkg-config freetype2 --cflags) -I$(VTKPATH) -Wno-deprecated -I/usr/X11R6/include -I/usr/X11R6/include/freetype2
+CCPFLAGS = -W -Wall -DLXMACOSX $(shell wx-config --cflags) -I/usr/X11R6/include
+LXLIBDIR =
+PLIBS = -lz -L/usr/X11R6/lib $(shell wx-config --libs --gl-libs) -L$(VTKLIBPATH) $(VTKLIBS)
+LOCHAPPBINDIR := $(shell mkdir -p ./loch.app/Contents/MacOS)
+POSTMAKE = cp -f ./loch ./loch.app/Contents/MacOS/loch
+STRIPFLAG =
 
 # PLATFORM ENDCONFIG
 
