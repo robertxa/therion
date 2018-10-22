@@ -16,7 +16,7 @@ Outre les fichiers de donn\'ees contenant des donn\'ees du relev\'e, Therion uti
 
 Le nom de fichier de configuration peut \^etre donn\'e comme argument \`a Therion. 
 Par d\'efaut, Therion recherche le fichier nomm\'e |thconfig| dans le r\'epertoire de travail en cours. 
-Il se lit comme tout autre fichier Therion (c’est-\`a-dire une commande par ligne ; les lignes vides ou commen\c{c}ant par `|#|' sont ignor\'ees ; 
+Il se lit comme tout autre fichier Therion (c'est-\`a-dire une commande par ligne ; les lignes vides ou commen\c{c}ant par `|#|' sont ignor\'ees ; 
 les lignes termin\'ees par une barre oblique invers\'ee (backslash) se poursuivent \`a la ligne suivante). 
 Une liste des commandes actuellement prises en charge est donn\'ee ci-apr\`es :
 
@@ -24,7 +24,7 @@ Une liste des commandes actuellement prises en charge est donn\'ee ci-apr\`es :
 
 Permet d'ex\'ecuter des commandes syst\`eme lors de la compilation de Therion.\[Par exemple pour ouvrir ou refresh un lecteur PDF externe.] 
 Normalement, Therion attend que le sous-processus soit termin\'e. 
-Si vous souhaitez continuer la compilation sans interruption, utilisez l’expression |<command> &| sous Linux et l’expression |<command>| sous Windows.
+Si vous souhaitez continuer la compilation sans interruption, utilisez l'expression |<command> &| sous Linux et l'expression |<command>| sous Windows.
 
 \subsubchapter `encoding'.
 
@@ -123,12 +123,12 @@ Fonctionne comme la commance |input| dans les fichiers de donn\'ees---Inclus d'a
   
   * |map-level <number>| = valide uniquement lorsqu'une topo est s\'electionn\'ee. 
                                            D\'etermine le niveau auquel l'extension de la topographie pour l'exportation d'atlas est arr\^et\'ee. 
-                                           Par d\'efaut, 0 est utilis\'e. si `basic' est sp\'ecifi\'e, l’extension se fait jusqu’aux topographies de base. 
+                                           Par d\'efaut, 0 est utilis\'e. si `basic' est sp\'ecifi\'e, l'extension se fait jusqu'aux topographies de base. 
                                            {\it Remarque :} les aper\c{c}us de ne sont affich\'es que comme sp\'ecifi\'e dans les topographies du |map-level| en cours.
 
   * |chapter-level <number>| = valide uniquement si une topographie est s\'electionn\'ee. 
                                                 D\'etermine le niveau (level) auquel, lors de l'exportation de l'atlas, l'extension de chapi-tre sera stopp\'ee. 
-                                                Par d\'efaut, 0 est utilis\'e. Si vous sp\'ecifiez `|-|' ou `|.|', aucun chapitre n’est export\'e pour cette topographie. 
+                                                Par d\'efaut, 0 est utilis\'e. Si vous sp\'ecifiez `|-|' ou `|.|', aucun chapitre n'est export\'e pour cette topographie. 
                                                 Si l'option de pages de titre (|title-pages|) de la mise en page (|layout| ) est activ\'ee, chaque chapitre commence par une page de titre.
   
   \endoptions

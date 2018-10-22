@@ -5,7 +5,7 @@
 \copy1
 \vskip4pt
 \line{\pic[\wd1]{ageom.pdf}\hss}
-\hbox to \wd1{\hfil\eightrm ---Inscription sur l'entr\'ee de l’Acad\'emie de Platon, $IV^e$ si\`ecle av. J.C.}
+\hbox to \wd1{\hfil\eightrm ---Inscription sur l'entr\'ee de l'Acad\'emie de Platon, $IV^e$ si\`ecle av. J.C.}
 %\hbox to \wd1{\hfil\eightrm of Plato's Academy, {\eightmit 4}th century BC}
 }
 
@@ -20,7 +20,7 @@ et de les r\'ecup\'erer de mani\`ere flexible et efficace ;
 * cr\'eer un mod\`ele 3D r\'ealiste de la grotte.
 \endlist
 
-Il fonctionne avec les syst\`emes d'exploitation Unix, Linux, MacOS\,X et Win32. Le code source et le programme d’installation de Windows sont disponibles sur la page Internet de Therion 
+Il fonctionne avec les syst\`emes d'exploitation Unix, Linux, MacOS\,X et Win32. Le code source et le programme d'installation de Windows sont disponibles sur la page Internet de Therion 
 (\www{https://therion.speleo.sk}).
 
 Therion est distribu\'e sous licence \www[GNU General Public License]
@@ -34,13 +34,13 @@ Ceux-ci ont \'et\'e d'une grande aide, en particulier pour les syst\`emes de cav
 Nous avons utilis\'e l'un d'eux, TJIKPR, comme couche de fond avec le calque des stations pour dessiner ensuite des topographies \`a la main. 
 Apr\`es avoir achev\'e un vaste atlas de la « Grotte des chauves-souris » de 166 pages au d\'ebut de 1997, nous avons rapidement eu un probl\`eme : 
 nous avons trouv\'e de nouveaux passages reliant des passages connus et les avons explor\'es. Apr\`es traitement dans TJIKPR, les nouvelles boucles ont influenc\'e la position des anciens relev\'es. 
-La plupart des stations du relev\'e avaient maintenant une position l\'eg\`erement diff\'erente d’avant en raison de la modification de la r\'epartition des erreurs. 
+La plupart des stations du relev\'e avaient maintenant une position l\'eg\`erement diff\'erente d'avant en raison de la modification de la r\'epartition des erreurs. 
 Ainsi, nous devions soit dessiner \`a nouveau tout l'Atlas, soit accepter que l'emplacement de certains endroits ne soit pas pr\'ecis 
 (dans le cas de boucles d'une longueur d'environ 1 km, il y avait parfois des erreurs d'environ 10 m) et d'essayer de fausser les nouveaux passages pour les adapter aux anciens.
 
 Ces probl\`emes ont persist\'e lorsque nous avons essay\'e de dessiner des topographies \`a l'aide de certains programmes de CAO en 1998 et 1999. 
 Il \'etait toujours difficile d'ajouter de nouveaux relev\'es sans adapter les anciens aux positions nouvellement calcul\'ees des stations topo dans toute la grotte. 
-Nous n’avons trouv\'e aucun programme capable de dessiner une topo complexe correctement mise \`a jour (c’est-\`a-dire pas seulement des vues avec une enveloppe LRUD), 
+Nous n'avons trouv\'e aucun programme capable de dessiner une topo complexe correctement mise \`a jour (c'est-\`a-dire pas seulement des vues avec une enveloppe LRUD), 
 dans laquelle les anciennes parties soient modifi\'ees en fonction des coordonn\'ees connues des stations du relev\'e le plus r\'ecent.
 
 En 1999, nous avons commenc\'e \`a r\'efl\'echir \`a la cr\'eation d'un programme propre pour le dessin de topographies. 
@@ -50,8 +50,8 @@ Survex pour un excellent traitement des plans, et \TeX\ pour la compilation des 
 Nous n'avions qu'\`a les rassembler. \`a Noël 1999, une version minimaliste de Therion fonctionnait pour la premi\`ere fois. 
 Cela ne comprenait que 32 kB de scripts Perl et de macros \MP, mais visait \`a d\'emontrer que nos id\'ees pouvaient \^etre mises en {\oe}uvre.
 
-En 2000-2001, nous avons recherch\'e le format optimal des donn\'ees d’entr\'ee, 
-le langage de programmation, le concept d’\'editeur de dessins interactif et des algorithmes internes avec l’aide de Martin Sluka (Prague) et de Martin Heller (Suisse). 
+En 2000-2001, nous avons recherch\'e le format optimal des donn\'ees d'entr\'ee, 
+le langage de programmation, le concept d'\'editeur de dessins interactif et des algorithmes internes avec l'aide de Martin Sluka (Prague) et de Martin Heller (Suisse). 
 En 2002, nous avons pu sortir  la premi\`ere version de Therion r\'eellement utilisable, qui r\'epondait \`a nos exigences.
 
 
@@ -68,7 +68,7 @@ Vous pouvez cr\'eer ces fichiers dans un \'editeur de texte brut quelconque tel 
 o\`u {\tt point} est un mot-cl\'e pour le symbole de point, 
 suivi de ses coordonn\'ees et d'une sp\'ecification de type de symbole \`a afficher (ici un pilier).
 
-L’\'edition manuelle de tels fichiers n’est pas facile - en particulier lorsque vous tracez des topos, 
+L'\'edition manuelle de tels fichiers n'est pas facile - en particulier lorsque vous tracez des topos, 
 devez penser en termes spatiaux (coordonn\'ees cart\'esiennes). Il existe donc une interface graphique sp\'eciale pour Therion appel\'ee XTherion. 
 XTherion fonctionne comme un \'editeur de texte avanc\'e, un \'editeur de topos (o\`u les images sont dessin\'ees de mani\`ere totalement interactive) 
 et un compilateur (qui ex\'ecute Therion sur les donn\'ees).
@@ -95,7 +95,7 @@ Cela peut paraître compliqu\'e, mais cette approche pr\'esente de nombreux avant
 * Therion est ind\'ependant des syst\`emes d'exploitation, d'un encodage de caract\`eres ou d'un \'editeur de fichiers d'entr\'ee particulier ; 
   les fichiers d'entr\'ee resteront lisibles par un \^etre humain.
 
-* Il est possible d’ajouter de nouveaux formats de sortie.
+* Il est possible d'ajouter de nouveaux formats de sortie.
 
 * Le mod\`ele 3D est g\'en\'er\'e \`a partir des images 2D pour obtenir un mod\`ele 3D r\'ealiste sans entrer trop de donn\'ees.
 
@@ -106,8 +106,8 @@ Cela peut paraître compliqu\'e, mais cette approche pr\'esente de nombreux avant
 
 ``Un programme doit faire une seule chose, mais le faire bien." (Ken Thompson) 
 Nous utilisons donc des programmes externes utiles, li\'es aux probl\`emes de composition et de visualisation des donn\'ees. 
-Therion peut alors s’acquitter de sa t\^ache beaucoup mieux que s’il s’agissait d’une application autonome 
-permettant de calibrer votre imprimante ou votre scanner et d’envoyer un courrier \'electronique avec vos donn\'ees d’un seul clic.
+Therion peut alors s'acquitter de sa t\^ache beaucoup mieux que s'il s'agissait d'une application autonome 
+permettant de calibrer votre imprimante ou votre scanner et d'envoyer un courrier \'electronique avec vos donn\'ees d'un seul clic.
 
 Therion a besoin de :
 \list
@@ -145,8 +145,8 @@ Il installe tous les \'el\'ements requis et cr\'ee des raccourcis vers XTherion 
 
 Therion lit les param\`etres du fichier d'initialisation. 
 Les param\`etres par d\'efaut devraient fonctionner correctement pour les utilisateurs utilisant uniquement les caract\`eres 
-latins\[Sur le fichier PDF, Therion restitue la plupart des caract\`eres accentu\'es sous la forme d’une combinaison 
-d’accents et d’un caract\`ere de base. Certains accents \'etranges peuvent \^etre omis. 
+latins\[Sur le fichier PDF, Therion restitue la plupart des caract\`eres accentu\'es sous la forme d'une combinaison 
+d'accents et d'un caract\`ere de base. Certains accents \'etranges peuvent \^etre omis. 
 Des lettres accentu\'ees pr\'ecompos\'ees sont incluses pour les langues slovaque et tch\`eque.], \TeX\ standard et \MP.
 
 Si vous souhaitez utiliser vos propres polices pour les caract\`eres latins ou non latins dans les fichiers PDF, 
@@ -181,7 +181,7 @@ Signification des couleurs :
 * noir---Programmes Therion et macros (XTherion est \'ecrit Tcl/Tk,
   il a donc besoin de cet interpr\'eteur pour fonctionner)
 * rouge---package \TeX\
-* vert---fichiers rentrants cr\'e\'es par l’utilisateur et fichiers sortants cr\'e\'es par Therion
+* vert---fichiers rentrants cr\'e\'es par l'utilisateur et fichiers sortants cr\'e\'es par Therion
 \endlist
 
 Therion effectue lui-m\^eme la t\^ache principale. 
@@ -195,12 +195,12 @@ Pdf\TeX\ effectue ensuite toute la composition et cr\'ee le fichier PDF final de
 
 Therion exporte aussi le mod\`ele 3D (complet ou ligne de cheminement) dans diff\'erents formats.
 
-Le cheminement peut \^etre export\'e pour un traitement ult\'erieur dans n’importe quelle base de donn\'ees SQL.
+Le cheminement peut \^etre export\'e pour un traitement ult\'erieur dans n'importe quelle base de donn\'ees SQL.
 
 
 \subchapter Premi\`ere utilisation.
 
-Apr\`es avoir expliqu\'e les principes de base de Therion, il est judicieux de l’essayer sur des exemples de donn\'ees.
+Apr\`es avoir expliqu\'e les principes de base de Therion, il est judicieux de l'essayer sur des exemples de donn\'ees.
 
 \list
 * T\'el\'echargez les exemples de donn\'ees \`a partir de la page Web Therion et d\'ecompressez-les quelque part sur le disque dur de votre ordinateur.
